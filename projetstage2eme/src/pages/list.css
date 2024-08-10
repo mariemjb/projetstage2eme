@@ -1,0 +1,58 @@
+/* Adjust the table to fit within the content area */
+.table-container {
+    margin: 50px auto 20px 250px; /* Smaller margin to avoid overlapping */
+    max-width: 100%; /* Full width within the content area */
+    background-color: #fff; /* White background for the table */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    padding: 20px; /* Padding around the table */
+}
+
+
+/* Header styles */
+.table thead th {
+    background-color: #007bff; /* Background color for header */
+    color: white; /* Text color for header */
+    font-weight: bold; /* Bold text in header */
+    padding: 15px; /* Padding for header cells */
+}
+
+/* Row styles */
+.table tbody tr:nth-child(even) {
+    background-color: #f2f2f2; /* Zebra stripe for even rows */
+}
+
+.table tbody tr:hover {
+    background-color: #e0e0e0; /* Highlight row on hover */
+}
+
+/* Cell styles */
+.table tbody td {
+    padding: 15px; /* Padding for cells */
+    text-align: center; /* Center align text */
+}
+
+/* Button styles */
+.table tbody .MuiButton-root {
+    margin: 0 2px; /* Margin between buttons */
+}
+
+.table tbody .MuiButton-outlinedPrimary {
+    border-color: #007bff; /* Outline color for primary button */
+    color: #007bff; /* Text color for primary button */
+}
+
+.table tbody .MuiButton-outlinedSecondary {
+    border-color: #dc3545; /* Outline color for secondary button */
+    color: #dc3545; /* Text color for secondary button */
+}
+
+.table tbody .MuiButton-outlinedPrimary:hover {
+    background-color: #007bff; /* Background on hover for primary button */
+    color: white; /* White text on hover */
+}
+
+.table tbody .MuiButton-outlinedSecondary:hover {
+    background-color: #dc3545; /* Background on hover for secondary button */
+    color: white; /* White text on hover */
+}

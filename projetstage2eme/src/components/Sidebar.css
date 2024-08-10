@@ -1,0 +1,15 @@
+
+
+/* Styles pour la barre latérale */
+.sidebar {
+  width: 250px; /* Largeur de la barre latérale */
+  background-color: #f4f4f4; /* Couleur de fond */
+  height: calc(100vh - 64px); /* Hauteur totale moins la hauteur de la barre supérieure */
+  position: fixed; /* Position fixe pour garder la barre latérale en place */
+  left: 0;
+  top: 64px; /* Décalage pour faire de la place pour la barre supérieure */
+  padding: 10px; /* Espacement intérieur */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Ombre pour un effet de profondeur */
+  overflow-y: auto; /* Permet de faire défiler le contenu si nécessaire */
+}
+  

@@ -1,0 +1,84 @@
+/* src/pages/Appointments.css */
+.appointments-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 50px auto 20px 300px;
+  }
+  
+  .appointments-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .appointments-title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .appointments-search {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 250px;
+    box-sizing: border-box;
+  }
+  
+  .appointments-table-wrapper {
+    overflow-x: auto;
+    max-width: 100%;
+    margin-right: 20px;
+  }
+  
+  .appointments-table {
+    width: auto;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+  
+  .appointments-table th, .appointments-table td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: left;
+  }
+  
+  .appointments-table th {
+    background-color: #f2f2f2;
+    padding: 10px;
+  }
+  
+  .appointments-table th:nth-child(1),
+  .appointments-table td:nth-child(1) {
+    width: 150px;
+  }
+  
+  .appointments-table th:nth-child(2),
+  .appointments-table td:nth-child(2) {
+    width: 150px;
+  }
+  
+  .appointments-table th:nth-child(3),
+  .appointments-table td:nth-child(3) {
+    width: 250px;
+  }
+  
+  .details-container {
+    margin-top: 20px;
+    padding: 20px; /* Increased padding */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    width: 80%; /* Adjust the width as needed, e.g., 80% of the parent container */
+    max-width: 1200px; /* Set a maximum width if needed */
+    margin-left: auto; /* Center the container */
+    margin-right: auto;
+}
+
+  
+  .details-container h3 {
+    margin-top: 0;
+  }

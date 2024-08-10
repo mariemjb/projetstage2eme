@@ -1,0 +1,51 @@
+/* Styles globaux pour l'application */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    height: 100vh; /* Assure que le corps prend toute la hauteur de la vue */
+    overflow-x: hidden; /* Évite le défilement horizontal */
+}
+
+/* Styles pour la barre supérieure */
+.topbar {
+    width: 100%;
+    position: fixed; /* Fixe la barre supérieure */
+    top: 0; /* Aligne la barre au sommet */
+    left: 0; /* Aligne la barre à gauche */
+    background-color: #fff; /* Couleur de fond de la barre supérieure */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Ombre pour un effet de profondeur */
+    height: 64px; /* Hauteur de la barre supérieure */
+    padding: 0 20px; /* Espacement intérieur */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; /* Assure que la barre supérieure est au-dessus du contenu */
+}
+.main-container {
+    display: flex;
+    margin-top: 64px; /* Décalage pour la hauteur de la barre supérieure */
+}
+
+/* Styles pour la barre latérale */
+.sidebar {
+    width: 250px; /* Largeur de la barre latérale */
+    background-color: #f4f4f4; /* Couleur de fond */
+    height: calc(100vh - 64px); /* Hauteur totale moins la hauteur de la barre supérieure */
+    position: fixed; /* Position fixe pour garder la barre latérale en place */
+    left: 0;
+    top: 64px; /* Décalage pour faire de la place pour la barre supérieure */
+    padding: 10px; /* Espacement intérieur */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Ombre pour un effet de profondeur */
+    overflow-y: auto; /* Permet de faire défiler le contenu si nécessaire */
+}
+
+/* Styles pour le contenu principal */
+.content {
+    margin-left: 250px; /* Space for the Sidebar */
+    padding: 20px; /* Padding for content */
+    margin-top: 64px; /* Space for the fixed TopBar */
+    background-color: #eaeaea; /* Background color for content */
+    min-height: calc(100vh - 64px); /* Ensures the content fills the space */
+    overflow: auto; /* Allows scrolling if content is too large */
+}
+
