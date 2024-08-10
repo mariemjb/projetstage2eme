@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'gestion_scolaire123',
+    password: 'root',
     database: 'patients'
 });
 
@@ -67,23 +67,66 @@ app.get('/api/patients', (req, res) => {
 });
 
 // Route pour mettre à jour un patient
+
 app.put('/api/patients/:id', upload.single('pdf'), (req, res) => {
     const patientId = req.params.id;
-    const { matricule, nom, prenom, sexe, dateDeNaissance, age, adresse, nationalite, gouvernorat, telDomicile, telPortable, profession, taille, poids, globulesRouges, maritalStatus, vieSeul } = req.body;
+    const {
+        matricule,
+        nom,
+        prenom,
+        sexe,
+        date_de_naissance,
+        age,
+        adresse,
+        nationalite,
+        gouvernorat,
+        tel_domicile,
+        tel_portable,
+        profession,
+        taille,
+        poids,
+        globule_rouge,
+        marie,
+        vie_seul
+    } = req.body;
     const pdfPath = req.file ? req.file.filename : null;
-    console.log('Received data:', { matricule, nom, prenom, sexe, dateDeNaissance, age, adresse, nationalite, gouvernorat, telDomicile, telPortable, profession, taille, poids, globulesRouges, maritalStatus, vieSeul, pdfPath });
+
+    console.log('Received data:', {
+        matricule,
+        nom,
+        prenom,
+        sexe,
+        date_de_naissance,
+        age,
+        adresse,
+        nationalite,
+        gouvernorat,
+        tel_domicile,
+        tel_portable,
+        profession,
+        taille,
+        poids,
+        globule_rouge,
+        marie,
+        vie_seul,
+        pdfPath
+    });
+
+    // Format the date for MySQL
+    const formattedDate = new Date(date_de_naissance).toISOString().split('T')[0];
+
+    let updateSql;
+    let updateValues;
 
     if (!pdfPath) {
-        // Si aucun fichier PDF n'a été téléchargé, récupérez l'ancien fichier depuis la base de données
         db.query('SELECT dossier_medical FROM patients WHERE matricule = ?', [patientId], (err, results) => {
             if (err) {
                 console.error('Database error:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
-            // Utilisez l'ancien nom de fichier PDF si aucun nouveau fichier n'est téléchargé
             const existingPdfPath = results[0].dossier_medical;
-            const updateSql = `UPDATE patients SET matricule = ?, nom = ?, prenom = ?, sexe = ?, date_de_naissance = ?, age = ?, adresse = ?, nationalite = ?, gouvernorat = ?, tel_domicile = ?, tel_portable = ?, profession = ?, taille = ?, poids = ?, globule_rouge = ?, marie = ?, vie_seul = ?, dossier_medical = ? WHERE matricule = ?`;
-            const updateValues = [matricule, nom, prenom, sexe, dateDeNaissance, age, adresse, nationalite, gouvernorat, telDomicile, telPortable, profession, taille, poids, globulesRouges, maritalStatus, vieSeul, existingPdfPath, patientId];
+            updateSql = `UPDATE patients SET matricule = ?, nom = ?, prenom = ?, sexe = ?, date_de_naissance = ?, age = ?, adresse = ?, nationalite = ?, gouvernorat = ?, tel_domicile = ?, tel_portable = ?, profession = ?, taille = ?, poids = ?, globule_rouge = ?, marie = ?, vie_seul = ?, dossier_medical = ? WHERE matricule = ?`;
+            updateValues = [matricule, nom, prenom, sexe, formattedDate, age, adresse, nationalite, gouvernorat, tel_domicile, tel_portable, profession, taille, poids, globule_rouge, marie, vie_seul, existingPdfPath, patientId];
             
             db.query(updateSql, updateValues, (err, results) => {
                 if (err) {
@@ -94,9 +137,8 @@ app.put('/api/patients/:id', upload.single('pdf'), (req, res) => {
             });
         });
     } else {
-        // Mise à jour avec le nouveau fichier PDF
-        const updateSql = `UPDATE patients SET matricule = ?, nom = ?, prenom = ?, sexe = ?, date_de_naissance = ?, age = ?, adresse = ?, nationalite = ?, gouvernorat = ?, tel_domicile = ?, tel_portable = ?, profession = ?, taille = ?, poids = ?, globule_rouge = ?, marie = ?, vie_seul = ?, dossier_medical = ? WHERE matricule = ?`;
-        const updateValues = [matricule, nom, prenom, sexe, dateDeNaissance, age, adresse, nationalite, gouvernorat, telDomicile, telPortable, profession, taille, poids, globulesRouges, maritalStatus, vieSeul, pdfPath, patientId];
+        updateSql = `UPDATE patients SET matricule = ?, nom = ?, prenom = ?, sexe = ?, date_de_naissance = ?, age = ?, adresse = ?, nationalite = ?, gouvernorat = ?, tel_domicile = ?, tel_portable = ?, profession = ?, taille = ?, poids = ?, globule_rouge = ?, marie = ?, vie_seul = ?, dossier_medical = ? WHERE matricule = ?`;
+        updateValues = [matricule, nom, prenom, sexe, formattedDate, age, adresse, nationalite, gouvernorat, tel_domicile, tel_portable, profession, taille, poids, globule_rouge, marie, vie_seul, pdfPath, patientId];
         
         db.query(updateSql, updateValues, (err, results) => {
             if (err) {
@@ -107,6 +149,10 @@ app.put('/api/patients/:id', upload.single('pdf'), (req, res) => {
         });
     }
 });
+
+
+
+
 
 
 
@@ -194,7 +240,6 @@ app.get('/api/check-availability/:id_medecin/:date_rendez_vous', (req, res) => {
     });
 });
 
-// Route pour créer un rendez-vous
 // Route pour créer un rendez-vous
 app.post('/api/appointments', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous } = req.body;

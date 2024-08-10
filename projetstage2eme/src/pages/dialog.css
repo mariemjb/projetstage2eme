@@ -1,0 +1,5 @@
+.custom-dialog-paper {
+    width: 100% !important;  /* Changez la largeur selon vos besoins */
+    max-width: 900px;  /* Largeur maximale pour le dialog */
+  }
+  
