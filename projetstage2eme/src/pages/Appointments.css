@@ -4,7 +4,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 50px auto 20px 300px;
+  margin: 50px auto 20px auto;
+  max-width: 1200px;
 }
 
 .appointments-header {
@@ -15,6 +16,7 @@
   font-size: 24px;
   font-weight: bold;
   color: #333;
+  text-align: center;
 }
 
 .appointments-table-wrapper {
@@ -25,7 +27,6 @@
 .appointments-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
 }
 
 .appointments-table th,
@@ -105,6 +106,7 @@
   border: none;
   cursor: pointer;
   font-size: 14px;
+  border-radius: 4px;
 }
 
 .popup-button-confirm {
@@ -140,10 +142,16 @@
   width: 400px;
 }
 
+.edit-modal-title {
+  color: green;
+  text-align: center;
+}
+
 .edit-modal h2 {
   margin-top: 0;
   margin-bottom: 20px;
   font-size: 20px;
+  color: green;
 }
 
 .edit-modal form {
@@ -210,9 +218,4 @@
 .details-container p {
   margin: 5px 0;
   color: #666;
-}
-
-/* Appointments.css */
-.edit-modal-title {
-  color: green;
 }

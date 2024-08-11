@@ -13,6 +13,7 @@ function Appointments() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [visibleDoctor, setVisibleDoctor] = useState(null);
   const [visiblePatient, setVisiblePatient] = useState(null);
+  const [selectedAppointmentDate, setSelectedAppointmentDate] = useState(null); // Ajouté pour suivre la date du rendez-vous
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState('');
@@ -33,15 +34,18 @@ function Appointments() {
       .catch(error => console.error('Error fetching appointments:', error));
   }, []);
 
-  const toggleDoctorDetails = (id) => {
-    if (visibleDoctor === id) {
+  const toggleDoctorDetails = (id, date) => {
+    // Vérifier si les détails du médecin sont déjà visibles pour le même ID et la même date
+    if (visibleDoctor === id && selectedAppointmentDate === date) {
       setVisibleDoctor(null);
       setSelectedDoctor(null);
+      setSelectedAppointmentDate(null);
     } else {
       axios.get(`http://localhost:5000/api/doctor/${id}`)
         .then(response => {
           setSelectedDoctor(response.data);
           setVisibleDoctor(id);
+          setSelectedAppointmentDate(date);
           // Faire défiler jusqu'à la section des détails du médecin
           if (doctorDetailsRef.current) {
             doctorDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -51,15 +55,18 @@ function Appointments() {
     }
   };
 
-  const togglePatientDetails = (id) => {
-    if (visiblePatient === id) {
+  const togglePatientDetails = (id, date) => {
+    // Vérifier si les détails du patient sont déjà visibles pour le même ID et la même date
+    if (visiblePatient === id && selectedAppointmentDate === date) {
       setVisiblePatient(null);
       setSelectedPatient(null);
+      setSelectedAppointmentDate(null);
     } else {
       axios.get(`http://localhost:5000/api/patient/${id}`)
         .then(response => {
           setSelectedPatient(response.data);
           setVisiblePatient(id);
+          setSelectedAppointmentDate(date);
           // Faire défiler jusqu'à la section des détails du patient
           if (patientDetailsRef.current) {
             patientDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -137,12 +144,15 @@ function Appointments() {
             {appointments.map((appt, index) => (
               <tr key={index}>
                 <td>
-                  <button className="icon-button" onClick={() => toggleDoctorDetails(appt.id_medecin)}>
+                  <button className="icon-button" onClick={() => toggleDoctorDetails(appt.id_medecin, appt.date_rendez_vous)}>
                     {appt.id_medecin}
                   </button>
                 </td>
                 <td>
-                  <button className="icon-button" onClick={() => togglePatientDetails(appt.id_patient)}>
+                  <button
+                    className="icon-button"
+                    onClick={() => togglePatientDetails(appt.id_patient, appt.date_rendez_vous)}
+                  >
                     {appt.id_patient}
                   </button>
                 </td>

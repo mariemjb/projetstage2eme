@@ -336,6 +336,26 @@ app.delete('/api/appointments/:id', (req, res) => {
     });
   });
   
+  app.put('/api/appointments', (req, res) => {
+    const { id_medecin, id_patient, date_rendez_vous } = req.body;
+
+    // Validation des données
+    if (!id_medecin || !id_patient || !date_rendez_vous) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const sql = `UPDATE rendez_vous SET date_rendez_vous = ? WHERE id_medecin = ? AND id_patient = ?`;
+    const values = [date_rendez_vous, id_medecin, id_patient];
+
+    db.query(sql, values, (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.status(200).json({ message: 'Appointment updated successfully' });
+    });
+});
+
 // Démarrez le serveur
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
