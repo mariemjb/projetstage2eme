@@ -21,7 +21,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <h2>Tableau de Bord</h2>
+      <h2 className="dashboard-title">Tableau de Bord</h2>
       <div className="stats-card">
         <h3>Nombre de Médecins</h3>
         <p>{stats.medecins}</p>

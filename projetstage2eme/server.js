@@ -420,6 +420,26 @@ app.put('/api/appointments', (req, res) => {
     });
 });
 
+// Route pour obtenir les statistiques du tableau de bord
+app.get('/api/dashboard/stats', (req, res) => {
+    const sql = `
+        SELECT 
+            (SELECT COUNT(*) FROM medecin) AS medecins,
+            (SELECT COUNT(*) FROM departement) AS departements,
+            (SELECT COUNT(*) FROM patients) AS patients,
+            (SELECT COUNT(*) FROM rendez_vous) AS rendez_vous_total,
+            (SELECT COUNT(*) FROM rendez_vous WHERE DATE(date_rendez_vous) = CURDATE()) AS rendez_vous_today,
+            (SELECT COUNT(*) FROM medecin WHERE statut_congé = 1) AS medecins_conge
+    `;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.status(200).json(results[0]);
+        }
+    });
+});
 
 // Démarrez le serveur
 app.listen(port, () => {
