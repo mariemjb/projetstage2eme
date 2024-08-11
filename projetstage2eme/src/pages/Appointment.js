@@ -13,7 +13,7 @@ function Appointments() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [visibleDoctor, setVisibleDoctor] = useState(null);
   const [visiblePatient, setVisiblePatient] = useState(null);
-  const [selectedAppointmentDate, setSelectedAppointmentDate] = useState(null); // Ajouté pour suivre la date du rendez-vous
+  const [selectedAppointmentDate, setSelectedAppointmentDate] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState('');
@@ -23,8 +23,8 @@ function Appointments() {
     id_patient: '',
     date_rendez_vous: ''
   });
+  const [saveMessage, setSaveMessage] = useState(''); // Ajouter cet état
 
-  // Références pour les détails du médecin et du patient
   const doctorDetailsRef = useRef(null);
   const patientDetailsRef = useRef(null);
 
@@ -35,7 +35,6 @@ function Appointments() {
   }, []);
 
   const toggleDoctorDetails = (id, date) => {
-    // Vérifier si les détails du médecin sont déjà visibles pour le même ID et la même date
     if (visibleDoctor === id && selectedAppointmentDate === date) {
       setVisibleDoctor(null);
       setSelectedDoctor(null);
@@ -46,7 +45,6 @@ function Appointments() {
           setSelectedDoctor(response.data);
           setVisibleDoctor(id);
           setSelectedAppointmentDate(date);
-          // Faire défiler jusqu'à la section des détails du médecin
           if (doctorDetailsRef.current) {
             doctorDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
@@ -56,7 +54,6 @@ function Appointments() {
   };
 
   const togglePatientDetails = (id, date) => {
-    // Vérifier si les détails du patient sont déjà visibles pour le même ID et la même date
     if (visiblePatient === id && selectedAppointmentDate === date) {
       setVisiblePatient(null);
       setSelectedPatient(null);
@@ -67,7 +64,6 @@ function Appointments() {
           setSelectedPatient(response.data);
           setVisiblePatient(id);
           setSelectedAppointmentDate(date);
-          // Faire défiler jusqu'à la section des détails du patient
           if (patientDetailsRef.current) {
             patientDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
@@ -78,13 +74,14 @@ function Appointments() {
 
   const handleDeleteClick = (appointment) => {
     setSelectedAppointment(appointment);
+    setDeleteMessage('');
     setShowDeletePopup(true);
   };
 
   const confirmDelete = () => {
     if (selectedAppointment) {
       const { id_medecin, id_patient, date_rendez_vous } = selectedAppointment;
-      axios.delete('http://localhost:5000/api/appointments', {
+      axios.delete('http://localhost:5000/api/deleteappointments', {
         data: { id_medecin, id_patient, date_rendez_vous }
       })
         .then(() => {
@@ -92,13 +89,14 @@ function Appointments() {
             !(appt.id_medecin === id_medecin && appt.id_patient === id_patient && appt.date_rendez_vous === date_rendez_vous)
           ));
           setDeleteMessage('Suppression réussie !');
-          setShowDeletePopup(false);
-          setTimeout(() => setDeleteMessage(''), 3000);
+          setTimeout(() => {
+            setDeleteMessage('');
+            setShowDeletePopup(false);
+          }, 3000);
         })
         .catch(error => {
           console.error('Error deleting appointment:', error.response ? error.response.data : error.message);
           setDeleteMessage('Erreur lors de la suppression.');
-          setTimeout(() => setDeleteMessage(''), 3000);
         });
     }
   };
@@ -118,9 +116,14 @@ function Appointments() {
       setAppointments(appointments.map(appt => 
         appt.date_rendez_vous === editAppointment.date_rendez_vous ? editAppointment : appt
       ));
-      setIsEditModalOpen(false);
+      setSaveMessage('Modifications enregistrées avec succès !'); // Message de succès
+      setTimeout(() => {
+        setSaveMessage('');
+        setIsEditModalOpen(false);
+      }, 3000);
     } catch (error) {
       console.error('Error updating appointment:', error);
+      setSaveMessage('Erreur lors de la sauvegarde.'); // Message d'erreur
     }
   };
 
@@ -129,7 +132,6 @@ function Appointments() {
       <div className="appointments-header">
         <h2 className="appointments-title">Liste des Rendez-vous</h2>
       </div>
-      {deleteMessage && <div className="delete-message">{deleteMessage}</div>}
       <div className="appointments-table-wrapper">
         <table className="appointments-table">
           <thead>
@@ -171,19 +173,23 @@ function Appointments() {
         </table>
       </div>
 
-      {/* Section des détails du médecin */}
       <div ref={doctorDetailsRef}>
-        {selectedDoctor && visibleDoctor === selectedDoctor.idmedecin && (
-          <div className="details-container">
+    {selectedDoctor && visibleDoctor === selectedDoctor.idmedecin && (
+        <div className="details-container">
             <h3>Détails du Médecin</h3>
             <p><strong>ID:</strong> {selectedDoctor.idmedecin}</p>
             <p><strong>Nom:</strong> {selectedDoctor.nom}</p>
             <p><strong>Prénom:</strong> {selectedDoctor.prenom}</p>
-          </div>
-        )}
-      </div>
+            <p><strong>ID Département:</strong> {selectedDoctor.id_dept}</p>
+            <p><strong>Spécialité:</strong> {selectedDoctor.specialite}</p>
+            <p><strong>Études:</strong> {selectedDoctor.études}</p>
+            <p><strong>Statut Congé:</strong> {selectedDoctor.statut_congé ? 'En congé' : 'Disponible'}</p>
+        </div>
+    )}
+</div>
 
-      {/* Section des détails du patient */}
+
+
       <div ref={patientDetailsRef}>
         {selectedPatient && visiblePatient === selectedPatient.matricule && (
           <div className="details-container">
@@ -203,6 +209,7 @@ function Appointments() {
             <p><strong>ID Patient:</strong> {selectedAppointment.id_patient}</p>
             <p><strong>Date et Heure:</strong> {new Date(selectedAppointment.date_rendez_vous).toLocaleString()}</p>
             <p>Êtes-vous sûr de vouloir supprimer ce rendez-vous ?</p>
+            {deleteMessage && <p className="delete-message">{deleteMessage}</p>}
           </div>
           <div className="popup-footer">
             <button className="popup-button popup-button-confirm" onClick={confirmDelete}>Confirmer</button>
@@ -220,36 +227,46 @@ function Appointments() {
       >
         <h2 className="edit-modal-title">Modifier le Rendez-vous</h2>
 
-        <form>
-          <label>
-            Date:
-            <input
-              type="datetime-local"
-              value={editAppointment.date_rendez_vous}
-              onChange={(e) => setEditAppointment({ ...editAppointment, date_rendez_vous: e.target.value })}
-            />
-          </label>
-          <label>
-            ID Médecin:
+        {saveMessage && (
+          <div className="save-message">{saveMessage}</div>
+        )}
+
+        <div className="edit-modal-body">
+          <div className="form-group">
+            <label>ID Médecin:</label>
             <input
               type="text"
               value={editAppointment.id_medecin}
-              disabled // Champ désactivé
+              disabled
             />
-          </label>
-          <label>
-            ID Patient:
+          </div>
+          <div className="form-group">
+            <label>ID Patient:</label>
             <input
               type="text"
               value={editAppointment.id_patient}
-              disabled // Champ désactivé
+              disabled
             />
-          </label>
-          <div className="modal-buttons">
-            <button type="button" className="btn-save" onClick={handleSaveChanges}>Sauvegarder</button>
-            <button type="button" className="btn-cancel" onClick={() => setIsEditModalOpen(false)}>Annuler</button>
           </div>
-        </form>
+          <div className="form-group">
+            <label>Date et Heure:</label>
+            <input
+              type="datetime-local"
+              value={editAppointment.date_rendez_vous}
+              onChange={(e) =>
+                setEditAppointment({ ...editAppointment, date_rendez_vous: e.target.value })
+              }
+            />
+          </div>
+        </div>
+        <div className="edit-modal-footer">
+          <button className="edit-modal-button edit-modal-button-save" onClick={handleSaveChanges}>
+            Sauvegarder
+          </button>
+          <button className="edit-modal-button edit-modal-button-cancel" onClick={() => setIsEditModalOpen(false)}>
+            Annuler
+          </button>
+        </div>
       </Modal>
     </div>
   );

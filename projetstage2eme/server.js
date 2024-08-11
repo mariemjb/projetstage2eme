@@ -215,6 +215,8 @@ app.get('/api/doctors', (req, res) => {
     });
 });
 // Route pour vérifier la disponibilité d'un médecin
+
+// Route pour vérifier la disponibilité d'un médecin
 app.get('/api/check-availability/:id_medecin/:date_rendez_vous', (req, res) => {
     const { id_medecin, date_rendez_vous } = req.params;
 
@@ -223,9 +225,13 @@ app.get('/api/check-availability/:id_medecin/:date_rendez_vous', (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Préparez la requête SQL pour vérifier la disponibilité
-    const sql = 'SELECT COUNT(*) AS count FROM rendez_vous WHERE id_medecin = ? AND date_rendez_vous = ?';
-    const values = [id_medecin, date_rendez_vous];
+    // Préparez la requête SQL pour vérifier la disponibilité du médecin et son statut de congé
+    const sql = `
+        SELECT 
+            (SELECT COUNT(*) FROM rendez_vous WHERE id_medecin = ? AND date_rendez_vous = ?) AS rendezvous_count,
+            (SELECT statut_congé FROM medecin WHERE idmedecin = ?) AS statut_congé
+    `;
+    const values = [id_medecin, date_rendez_vous, id_medecin];
 
     // Exécutez la requête SQL
     db.query(sql, values, (err, results) => {
@@ -234,11 +240,42 @@ app.get('/api/check-availability/:id_medecin/:date_rendez_vous', (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        // Vérifiez si le médecin est disponible
-        const isAvailable = results[0].count === 0;
-        res.status(200).json({ available: isAvailable });
+        // Débogage : Afficher les résultats pour vérifier leur structure
+        console.log('SQL Query Results:', results);
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Doctor not found' });
+        }
+
+        // Vérifiez si le médecin est disponible ou en congé
+        const result = results[0];
+        const rendezvous_count = result.rendezvous_count;
+        const statut_congé = result.statut_congé;
+
+        console.log('Rendezvous Count:', rendezvous_count);
+        console.log('Statut Congé:', statut_congé);
+
+        // Déterminez la disponibilité
+        if (statut_congé === 1) {
+            // Le médecin est en congé
+            return res.status(200).json({ available: false, message: 'Doctor is on leave' });
+        } else if (rendezvous_count > 0) {
+            // Le médecin a déjà un rendez-vous à cette date
+            return res.status(200).json({ available: false, message: 'Doctor has appointments at this date' });
+        } else {
+            // Le médecin est disponible
+            return res.status(200).json({ available: true });
+        }
     });
 });
+
+
+     
+    
+
+  
+
+
 
 // Route pour créer un rendez-vous
 app.post('/api/appointments', (req, res) => {
@@ -286,15 +323,16 @@ app.get('/api/getappointments', (req, res) => {
 // Route pour obtenir les détails d'un médecin par son ID
 app.get('/api/doctor/:id', (req, res) => {
     const { id } = req.params;
-    const sql = 'SELECT * FROM medecin WHERE idmedecin = ?';
+    const sql = 'SELECT idmedecin, nom, prenom, id_dept, specialite, études, statut_congé FROM medecin WHERE idmedecin = ?';
     db.query(sql, [id], (err, results) => {
-      if (err) {
-        console.error('Error executing SQL query:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.status(200).json(results[0]);
+        if (err) {
+            console.error('Error executing SQL query:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.status(200).json(results[0]);
     });
-  });
+});
+
   
   // Route pour obtenir les détails d'un patient par son ID
   app.get('/api/patient/:id', (req, res) => {
@@ -309,20 +347,21 @@ app.get('/api/doctor/:id', (req, res) => {
     });
   });
 
-// Middleware pour gérer les erreurs 404
-app.use((req, res, next) => {
-    res.status(404).json({ error: 'Not Found' });
-});
 
-app.delete('/api/appointments/:id', (req, res) => {
+
+app.delete('/api/deleteappointments', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous } = req.body;
   
     if (!id_medecin || !id_patient || !date_rendez_vous) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
   
+    // Convertir la date ISO 8601 en format DATETIME
+    const date = new Date(date_rendez_vous);
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+  
     const sql = 'DELETE FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?';
-    const values = [id_medecin, id_patient, date_rendez_vous];
+    const values = [id_medecin, id_patient, formattedDate];
   
     db.query(sql, values, (err, results) => {
       if (err) {
@@ -334,27 +373,53 @@ app.delete('/api/appointments/:id', (req, res) => {
       }
       res.status(200).json({ message: 'Appointment deleted successfully' });
     });
-  });
-  
-  app.put('/api/appointments', (req, res) => {
-    const { id_medecin, id_patient, date_rendez_vous } = req.body;
+});
 
-    // Validation des données
+  
+   
+  
+app.put('/api/appointments', (req, res) => {
+    const { id_medecin, id_patient, date_rendez_vous } = req.body;
+    console.log('Received data:', { id_medecin, id_patient, date_rendez_vous });
+
+    const date = new Date(date_rendez_vous);
     if (!id_medecin || !id_patient || !date_rendez_vous) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const sql = `UPDATE rendez_vous SET date_rendez_vous = ? WHERE id_medecin = ? AND id_patient = ?`;
-    const values = [date_rendez_vous, id_medecin, id_patient];
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
 
-    db.query(sql, values, (err, results) => {
+    // Vérifiez s'il existe une entrée avec cette date pour cet id_medecin et id_patient
+    const checkSql = `SELECT * FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?`;
+    const checkValues = [id_medecin, id_patient, formattedDate];
+  
+    db.query(checkSql, checkValues, (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-        res.status(200).json({ message: 'Appointment updated successfully' });
+
+        // Si une entrée existe déjà avec cette combinaison, envoyez une erreur
+        if (results.length > 0) {
+            return res.status(400).json({ error: 'This appointment already exists' });
+        }
+
+        // Si aucun conflit, procédez à la mise à jour
+        const updateSql = `UPDATE rendez_vous SET date_rendez_vous = ? WHERE id_medecin = ? AND id_patient = ?`;
+        const updateValues = [formattedDate, id_medecin, id_patient];
+    
+        console.log('Executing SQL:', { sql: updateSql, values: updateValues });
+    
+        db.query(updateSql, updateValues, (err, results) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            res.status(200).json({ message: 'Appointment updated successfully' });
+        });
     });
 });
+
 
 // Démarrez le serveur
 app.listen(port, () => {
