@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'root',
+    password: 'gestion_scolaire123',
     database: 'patients'
 });
 
@@ -313,6 +313,29 @@ app.get('/api/doctor/:id', (req, res) => {
 app.use((req, res, next) => {
     res.status(404).json({ error: 'Not Found' });
 });
+
+app.delete('/api/appointments/:id', (req, res) => {
+    const { id_medecin, id_patient, date_rendez_vous } = req.body;
+  
+    if (!id_medecin || !id_patient || !date_rendez_vous) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+  
+    const sql = 'DELETE FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?';
+    const values = [id_medecin, id_patient, date_rendez_vous];
+  
+    db.query(sql, values, (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Appointment not found' });
+      }
+      res.status(200).json({ message: 'Appointment deleted successfully' });
+    });
+  });
+  
 // Démarrez le serveur
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
