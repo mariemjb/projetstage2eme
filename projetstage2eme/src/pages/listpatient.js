@@ -194,6 +194,9 @@ const handleViewDetails = async (patient) => {
   return (
     <div>
       <TableContainer component={Paper} className="table-container">
+      <div className="list-header">
+        <h2 className="list-title">Liste Des Patient</h2>
+      </div>
         <Table>
           <TableHead>
             <TableRow>

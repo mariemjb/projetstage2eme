@@ -1,29 +1,56 @@
+/* Styles globaux pour le conteneur de l'application */
+body {
+    display: flex;
+    justify-content: center; /* Centre horizontalement le contenu */
+    align-items: center; /* Centre verticalement le contenu */
+    min-height: 100vh; /* Assure que le conteneur prend toute la hauteur de la fenêtre */
+    margin: 0; /* Supprime les marges par défaut du body */
+    background: linear-gradient(to right, #f0f0f0, #ffffff 50%, #f0f0f0); /* Dégradé clair sur les côtés */
+}
+
 /* Styles globaux pour le formulaire */
 .book-appointment-container {
     background-color: #fff; /* Couleur de fond du formulaire */
     padding: 20px; /* Espacement intérieur */
     border-radius: 8px; /* Coins arrondis */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre pour un effet de profondeur */
-    max-width: 800px; /* Largeur maximale du formulaire */
-    margin: 50px auto 20px 450px;/* Centre le formulaire et ajoute un espacement vertical */
+    max-width: 1200px; /* Largeur maximale du formulaire augmentée */
+    width: 90%; /* Occupe 90% de la largeur de la fenêtre */
+    box-sizing: border-box; /* Inclut le padding et la bordure dans la largeur totale */
+    text-align: center; /* Centre le texte à l'intérieur du conteneur */
+    margin: 20px auto; /* Centre le formulaire horizontalement et ajoute un espacement vertical */
+}
+
+/* Styles pour le titre */
+.book-appointment-container h2 {
+    font-size: 24px; /* Taille de la police du titre */
+    font-weight: 700; /* Rend le texte du titre très gras */
+    color: #333333; /* Couleur du texte */
+    margin-bottom: 20px; /* Espacement sous le titre */
 }
 
 /* Styles pour les champs du formulaire */
 .book-appointment-form {
     display: flex;
     flex-direction: column;
+    align-items: center; /* Centre les éléments du formulaire */
 }
 
+/* Styles pour le groupe de champs */
 .book-appointment-group {
     margin-bottom: 15px; /* Espacement entre les champs */
+    width: 100%; /* Assure que les groupes de champs prennent toute la largeur disponible */
+    max-width: 900px; /* Largeur maximale augmentée pour plus d'espace */
 }
 
+/* Styles pour les labels */
 .book-appointment-group label {
     display: block; /* Affiche le label en bloc pour qu'il occupe toute la largeur */
     font-weight: bold; /* Rend le texte du label gras */
     margin-bottom: 5px; /* Espacement sous le label */
 }
 
+/* Styles pour les champs de saisie */
 .book-appointment-group select,
 .book-appointment-group input[type="datetime-local"] {
     width: 100%; /* Prend toute la largeur disponible */
@@ -31,22 +58,23 @@
     border: 1px solid #ddd; /* Bordure légère */
     border-radius: 4px; /* Coins arrondis pour les champs */
     box-sizing: border-box; /* Inclut le padding et la bordure dans la largeur totale */
+    font-size: 16px; /* Taille de la police */
 }
 
 /* Styles pour le bouton de soumission */
 .book-appointment-submit-button {
-    background-color: #007bff; /* Couleur de fond */
+    background-color: #28a745; /* Couleur de fond verte */
     color: #fff; /* Couleur du texte */
     border: none; /* Supprime la bordure par défaut */
-    padding: 10px 20px; /* Espacement intérieur */
+    padding: 12px 24px; /* Espacement intérieur amélioré */
     border-radius: 4px; /* Coins arrondis */
     cursor: pointer; /* Changement du curseur au survol */
-    font-size: 16px; /* Taille de la police */
+    font-size: 18px; /* Taille de la police augmentée pour meilleure visibilité */
     transition: background-color 0.3s ease; /* Effet de transition pour le changement de couleur */
 }
 
 .book-appointment-submit-button:hover {
-    background-color: #0056b3; /* Couleur de fond au survol */
+    background-color: #218838; /* Couleur de fond verte plus foncée au survol */
 }
 
 /* Styles pour le message de confirmation */
@@ -54,4 +82,11 @@
     color: green;
     font-weight: bold;
     margin-bottom: 1em;
+}
+
+/* Styles pour le message d'erreur */
+.book-appointment-error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 1em;
 }

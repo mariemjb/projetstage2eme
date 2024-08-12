@@ -16,7 +16,7 @@ const PatientDetailsDialog = ({ open, handleClose, patient, antecedents = [], ha
             {antecedents.map(antecedent => (
                <li key={antecedent.idantecedant}>
                {antecedent.libelle_antecedant} 
-                 <br/>Ancienneté: {antecedent.anciennete}
+                 Ancienneté: {antecedent.anciennete}
                  <br/>Traitement: {antecedent.traitement}
                  <br/> Équilibre: {antecedent.equilibre ? 'Oui' : 'Non'}
                  <br/>  Description: {antecedent.description}
