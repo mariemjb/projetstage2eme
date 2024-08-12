@@ -208,7 +208,7 @@ app.get('/api/patients/:id/dossier-medical', (req, res) => {
 });
 
 app.get('/api/doctors', (req, res) => {
-    db.query('SELECT * FROM patients.medecin;', (err, results) => {
+    db.query('SELECT * FROM patients.medecin AS d JOIN patients.departement AS dept ON d.id_dept = dept.id_departement JOIN patients.service AS s ON dept.id_service = s.idservice;', (err, results) => {
         if (err) {
             console.error(err);
             res.status(500).json({ error: 'Database error' });
@@ -503,6 +503,70 @@ app.get('/api/patients/:matricule/details', (req, res) => {
                     patient,
                     antecedents: antecedentsResults,
                     habits: habitsResults
+                });
+            });
+        });
+    });
+});
+// Route pour obtenir la liste des patients du docteur
+app.get('/api/doctors/:idmedecin/liste', (req, res) => {
+    const id_medecin = req.params.idmedecin;
+
+    // Requête SQL pour mettre à jour la table consultation
+    const majQuery = `
+        INSERT IGNORE INTO patients.consultation (idmedecin, idpatient, date)
+        SELECT id_medecin, id_patient, date_rendez_vous
+        FROM patients.rendez_vous
+        WHERE date_rendez_vous < NOW();
+    `;
+
+    // Requête SQL pour obtenir les détails du docteur
+    const medecinQuery = 'SELECT * FROM medecin WHERE idmedecin = ?';
+
+    // Requête SQL pour obtenir les détails des patients associés
+    const patientsQuery = `
+        SELECT p.*, c.date
+        FROM consultation AS c
+        JOIN patients.patients AS p ON c.idpatient = p.matricule
+        JOIN patients.medecin AS m ON c.idmedecin = m.idmedecin
+        WHERE c.idmedecin = ?;
+    `;
+
+    // Mise à jour de la table consultation
+    db.query(majQuery, (err) => {
+        if (err) {
+            // Vérifier si l'erreur est liée à une duplication (ajustez le message d'erreur si nécessaire)
+            if (err.code === 'ER_DUP_ENTRY') {
+                console.warn('Duplicate entry warning during update:', err); // Log l'avertissement pour débogage
+            } else {
+                console.error('Database error during update:', err); // Log l'erreur pour débogage
+            }
+        }
+
+        // Récupérer les détails du docteur
+        db.query(medecinQuery, [id_medecin], (err, doctorResults) => {
+            if (err) {
+                console.error('Error fetching doctor details:', err); // Log l'erreur pour débogage
+                return res.status(500).json({ error: 'Database error' });
+            }
+
+            if (doctorResults.length === 0) {
+                return res.status(404).json({ message: 'Doctor not found' });
+            }
+
+            const doctor = doctorResults[0];
+
+            // Récupérer les patients associés
+            db.query(patientsQuery, [id_medecin], (err, patientResults) => {
+                if (err) {
+                    console.error('Error fetching patient details:', err); // Log l'erreur pour débogage
+                    return res.status(500).json({ error: 'Database error' });
+                }
+
+                // Retourner toutes les données au frontend
+                res.json({
+                    doctor,
+                    patients: patientResults
                 });
             });
         });
