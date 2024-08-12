@@ -22,6 +22,7 @@ import './list.css';
 function PatientsList() {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatientEdit, setSelectedPatientEdit] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [patientAntecedents, setPatientAntecedents] = useState([]);
   const [patientHabits, setPatientHabits] = useState([]);
@@ -51,14 +52,24 @@ function PatientsList() {
         .catch(error => console.error('Error fetching patient details:', error));
     }
   }, [selectedPatient]);
+  useEffect(() => {
+    if (selectedPatientEdit && selectedPatientEdit.matricule) {
+      axios.get(`http://localhost:5000/api/patients/${selectedPatientEdit.matricule}`)
+        .then(response => {
+          setSelectedPatientEdit(response.data.patient);
+          console.log('Patient:', response.data.patient);
+        })
+        .catch(error => console.error('Error fetching patient details:', error));
+    }
+  }, [selectedPatientEdit]);
   const handleEdit = (patient) => {
-    setSelectedPatient(patient);
+    setSelectedPatientEdit(patient);
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedPatient(null);
+    setSelectedPatientEdit(null);
   };
   const handleCloseDialogdetails = () => {
     setOpenDetailsDialog(false);
@@ -66,18 +77,19 @@ function PatientsList() {
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setSelectedPatient({
-      ...selectedPatient,
+    setSelectedPatientEdit({
+      ...selectedPatientEdit,
       [name]: value,
     });
   };
 
   const handleFileChange = (e) => {
-    setSelectedPatient({
-      ...selectedPatient,
-      pdf: e.target.files[0],
+    console.log('File Change:', e.target.files[0]);
+    setSelectedPatientEdit({
+        ...selectedPatientEdit,
+        pdf: e.target.files[0],
     });
-  };
+};
 
   const formatDateForDb = (dateString) => {
     const date = new Date(dateString);
@@ -96,15 +108,15 @@ const handleSubmit = async (e) => {
 
     try {
         const formDataToSend = new FormData();
-        Object.keys(selectedPatient).forEach(key => {
+        Object.keys(selectedPatientEdit).forEach(key => {
             if (key === 'pdf') {
-                if (selectedPatient[key]) {
-                    formDataToSend.append(key, selectedPatient[key]);
+                if (selectedPatientEdit[key]) {
+                    formDataToSend.append(key, selectedPatientEdit[key]);
                 }
             } else if (key === 'date_de_naissance') {
-                formDataToSend.append(key, formatDateForDb(selectedPatient[key]));
+                formDataToSend.append(key, formatDateForDb(selectedPatientEdit[key]));
             } else {
-                formDataToSend.append(key, selectedPatient[key]);
+                formDataToSend.append(key, selectedPatientEdit[key]);
             }
         });
 
@@ -113,13 +125,13 @@ const handleSubmit = async (e) => {
             console.log(key, value);
         }
 
-        const response = await axios.put(`http://localhost:5000/api/patients/${selectedPatient.matricule}`, formDataToSend, {
+        const response = await axios.put(`http://localhost:5000/api/patients/${selectedPatientEdit.matricule}`, formDataToSend, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
 
-        setPatients(patients.map(patient => patient.matricule === selectedPatient.matricule ? response.data : patient));
+        setPatients(patients.map(patient => patient.matricule === selectedPatientEdit.matricule ? response.data : patient));
         console.log('Update Response:', response.data); // Log the update response
         // Refresh the patients list after updating
         refreshPatientsList();
@@ -281,7 +293,7 @@ const handleViewDetails = async (patient) => {
       <PatientEditDialog 
         open={openDialog} 
         handleClose={handleCloseDialog}
-        patient={selectedPatient}
+        patient={selectedPatientEdit}
         handleChange={handleChange}
         handleSubmit={handleSubmit}
         handleFileChange={handleFileChange}

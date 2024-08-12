@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './details.css';
 import MyForm from '../components/habitude';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const MedicalConditionsForm = () => {
     const [patients, setPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState('');
@@ -62,14 +64,15 @@ const MedicalConditionsForm = () => {
         }));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-    
-        // Filter the form data to include only those with "Oui" answers
-        const filteredDataConditions = Object.values(formData).filter(condition => condition.answer === 'oui');
-    
-        // Ensure each condition includes an id_antecedant
-        const dataToSendConditions = filteredDataConditions.map(condition => ({
+      
+        try {
+          // Filtrer les données du formulaire pour inclure uniquement celles avec des réponses "Oui"
+          const filteredDataConditions = Object.values(formData).filter(condition => condition.answer === 'oui');
+      
+          // S'assurer que chaque condition inclut un id_antecedant
+          const dataToSendConditions = filteredDataConditions.map(condition => ({
             id_antecedant: condition.id_antecedant,
             answer: condition.answer,
             name: condition.name,
@@ -77,38 +80,81 @@ const MedicalConditionsForm = () => {
             traitement: condition.traitement,
             equilibre: condition.equilibre,
             description: condition.description,
-            matricule: selectedPatientDetails?.matricule // Use the fetched patient details
-        }));
-    
-        // Filter the form data to include only those with "Oui" answers for habits
-        const filteredHabits = Object.values(formDataHabits).filter(habit => habit.answerhab === 'oui');
-    
-        // Ensure each habit includes an id_hab
-        const dataToSendHabits = filteredHabits.map(habit => ({
+            matricule: selectedPatientDetails?.matricule // Utilisation des détails du patient
+          }));
+      
+          // Filtrer les habitudes pour inclure uniquement celles avec des réponses "Oui"
+          const filteredHabits = Object.values(formDataHabits).filter(habit => habit.answerhab === 'oui');
+      
+          // S'assurer que chaque habitude inclut un id_hab
+          const dataToSendHabits = filteredHabits.map(habit => ({
             id_hab: habit.id_hab,
             answerhab: habit.answerhab,
             namehab: habit.namehab,
             quantite: habit.quantite,
-            matricule: selectedPatientDetails?.matricule // Use the fetched patient details
-        }));
-    
-        // Combine the data into a single object
-        const dataToSend = {
+            matricule: selectedPatientDetails?.matricule // Utilisation des détails du patient
+          }));
+      
+          // Combiner les données dans un seul objet
+          const dataToSend = {
             conditions: dataToSendConditions,
             habits: dataToSendHabits
-        };
-    
-        // Send the filtered data to the server using Axios
-        axios.post('http://localhost:5000/api/medical-conditions', dataToSend, {
+          };
+      
+          // Envoyer les données filtrées au serveur via Axios
+          const response = await axios.post('http://localhost:5000/api/medical-conditions', dataToSend, {
             headers: { 'Content-Type': 'application/json' }
-        })
-        .then(response => {
-            console.log('Success:', response.data);
-        })
-        .catch(error => {
-            console.error('Error:', error.response ? error.response.data : error.message);
-        });
-    };
+          });
+      
+          console.log('Success:', response.data);
+      
+          // Réinitialiser les champs du formulaire
+          setFormData({
+            1: { id_antecedant: 1, name: 'Pathologie respiratoire chronique', answer: '', anciennete: '', traitement: '', equilibre: '', description:'' },
+            2: { id_antecedant: 2, name: 'Cardiopathie', answer: '', anciennete: '', traitement: '', equilibre: '' ,description:''},
+            3: { id_antecedant: 3, name: 'Trouble de rythme cardiaque', answer: '', anciennete: '', traitement: '', equilibre: '' ,description:''},
+            4: { id_antecedant: 4, name: 'HTA', answer: '', anciennete: '', traitement: '', equilibre: '',description:'' },
+            5: { id_antecedant: 5, name: 'Diabète', answer: '', anciennete: '', traitement: '', equilibre: '' ,description:''},
+            6: { id_antecedant: 6, name: 'Insuffisance rénale chronique', answer: '', anciennete: '', traitement: '', equilibre: '',description:'' },
+            7: { id_antecedant: 7, name: 'AVC', answer: '', anciennete: '', traitement: '', equilibre: '' ,description:''},
+            8: { id_antecedant: 8, name: 'Rétinopathie', answer: '', anciennete: '', traitement: '', equilibre: '' ,description:''},
+            9: { id_antecedant: 9, name: 'ATCD chirurgicaux', answer: '', anciennete: '', traitement: '', equilibre: '' ,description:''},
+            10: { id_antecedant: 10, name: 'Grossesse en cours', answer: '', anciennete: '', traitement: '' ,description:''},
+            11: { id_antecedant: 11, name: 'Prise récente d’AINS', answer: '', anciennete: '', traitement: '' ,description:''},
+            12: { id_antecedant: 12, name: 'Traitement immunosuppresseur', answer: '', anciennete: '', traitement: '' ,description:''},
+          });
+      
+          setFormDataHabits({
+            1: { id_hab: 1, namehab: 'Tabagisme', answerhab: '', quantite: '' },
+            2: { id_hab: 2, namehab: 'Consommation De Drogues/Cannabis', answerhab: '', quantite: '' },
+            3: { id_hab: 3, namehab: 'Alcool', answerhab: '', quantite: '' },
+          });
+      
+          // Afficher une popup de succès
+          toast.success('Envoi réussi !', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        } catch (error) {
+          console.error(error);
+      
+          toast.error('Erreur lors de l\'envoi des données.', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+      };
+      
     
 
     return (
@@ -845,6 +891,7 @@ const MedicalConditionsForm = () => {
                 <MyForm formDataHabits={formDataHabits} handleChange={handleChange} />
                 <button type="submit">Soumettre</button>
             </form>
+            <ToastContainer />
         </div>
     );
 };

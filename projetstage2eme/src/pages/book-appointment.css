@@ -6,6 +6,7 @@ body {
     min-height: 100vh; /* Assure que le conteneur prend toute la hauteur de la fenêtre */
     margin: 0; /* Supprime les marges par défaut du body */
     background: linear-gradient(to right, #f0f0f0, #ffffff 50%, #f0f0f0); /* Dégradé clair sur les côtés */
+    
 }
 
 /* Styles globaux pour le formulaire */

@@ -297,6 +297,23 @@ app.post('/api/appointments', (req, res) => {
     });
 });
 // Route pour obtenir les rendez-vous
+app.get('/api/getappointments', (req, res) => {
+    // Préparez la requête SQL pour obtenir tous les rendez-vous
+    const sql = 'SELECT * FROM rendez_vous';
+  
+    // Exécutez la requête SQL
+    db.query(sql, (err, results) => {
+      if (err) {
+        console.error('Error executing SQL query:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+  
+      // Réponse en cas de succès
+      res.status(200).json(results);
+    });
+  });
+
+// Route pour modifier les rendez-vous
 app.put('/api/appointments', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous } = req.body;
     console.log('Received data:', { id_medecin, id_patient, date_rendez_vous });

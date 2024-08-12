@@ -1,77 +1,78 @@
-/* src/pages/Dashboard.css */
-.dashboard-container {
-  padding: 40px 20px; /* Padding around the container */
-  background: #f5f7fa; /* Light background color */
+/* Container for aligning cards in a row */
+.stats-container {
   display: flex;
-  flex-direction: column; /* Stack items vertically */
-  align-items: center; /* Center items horizontally */
-  justify-content: center; /* Center items vertically */
-  min-height: 100vh; /* Ensure it takes at least the full height of the viewport */
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 10px;
+  width: 100%; /* Set the width to 100% to use the full available space */
+  max-width: 1200px; /* Optional: Set a max width if needed */
+  margin: 0 auto; /* Center the container horizontally */
 }
 
+/* Dashboard container styles */
+.dashboard-container {
+  padding: 40px 20px;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 1400px;
+}
+
+/* Dashboard title styles */
 .dashboard-title {
-  text-align: center; /* Center the title text */
-  margin-top: 40px; /* Space from the top */
-  margin-bottom: 40px; /* Space below the title */
-  font-size: 32px; /* Larger font size for prominence */
-  color: #2c3e50; /* Darker color for the title */
-  font-weight: 700; /* Bold title */
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  font-size: 32px;
+  color: #2c3e50;
+  font-weight: 700;
 }
 
+/* Individual stat card styles */
 .stats-card {
   background: #ffffff;
   border-radius: 12px;
   padding: 20px;
-  margin: 10px; /* Space between cards */
+  margin: 10px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  width: 100%; /* Make cards full-width within the container */
+  width: 100%; /* Full width within the container */
   max-width: 350px; /* Max width of cards */
-  border-left: 8px solid; /* Left border for color emphasis */
-  display: flex; /* Flexbox for centering text */
-  flex-direction: column; /* Stack text elements vertically */
-  align-items: center; /* Center text horizontally */
+  border-left: 8px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.stats-card:nth-child(1) {
-  border-left-color: #3498db; /* Blue for Médecins */
-}
+/* Specific card styles */
+.stats-card:nth-child(1) { border-left-color: #3498db; }
+.stats-card:nth-child(2) { border-left-color: #e74c3c; }
+.stats-card:nth-child(3) { border-left-color: #2ecc71; }
+.stats-card:nth-child(4) { border-left-color: #f39c12; }
+.stats-card:nth-child(5) { border-left-color: #9b59b6; }
+.stats-card:nth-child(6) { border-left-color: #1abc9c; }
 
-.stats-card:nth-child(2) {
-  border-left-color: #e74c3c; /* Red for Départements */
-}
-
-.stats-card:nth-child(3) {
-  border-left-color: #2ecc71; /* Green for Patients */
-}
-
-.stats-card:nth-child(4) {
-  border-left-color: #f39c12; /* Orange for Total Rendez-vous */
-}
-
-.stats-card:nth-child(5) {
-  border-left-color: #9b59b6; /* Purple for Rendez-vous Today */
-}
-
-.stats-card:nth-child(6) {
-  border-left-color: #1abc9c; /* Teal for Médecins en Congé */
-}
-
+/* Hover effect for cards */
 .stats-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
+/* Text styles within cards */
 .stats-card h3 {
   margin: 0 0 15px;
   font-size: 22px;
-  color: #2c3e50; /* Darker color for titles */
+  color: #2c3e50;
   font-weight: 600;
 }
 
 .stats-card p {
   font-size: 32px;
   margin: 0;
-  color: #34495e; /* Slightly different color for text */
+  color: #34495e;
   font-weight: 700;
 }
