@@ -13,14 +13,20 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PatientEditDialog from './PatientEditDialog'; // Import du composant
-
+import PatientDetailsDialog from './Showdetailspatient';
 import './list.css';
 
 function PatientsList() {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [patientAntecedents, setPatientAntecedents] = useState([]);
+  const [patientHabits, setPatientHabits] = useState([]);
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  
 
   useEffect(() => {
     axios.get('http://localhost:5000/api/patients')
@@ -31,7 +37,20 @@ function PatientsList() {
         console.error('There was an error fetching the patients!', error);
       });
   }, []);
-
+  useEffect(() => {
+    if (selectedPatient && selectedPatient.matricule) {
+      axios.get(`http://localhost:5000/api/patients/${selectedPatient.matricule}/details`)
+        .then(response => {
+          setSelectedPatient(response.data.patient);
+          setPatientAntecedents(response.data.antecedents);
+          setPatientHabits(response.data.habits);
+          console.log('Patient:', response.data.patient);
+          console.log('Antecedents:', response.data.antecedents);
+          console.log('Habits:', response.data.habits);
+        })
+        .catch(error => console.error('Error fetching patient details:', error));
+    }
+  }, [selectedPatient]);
   const handleEdit = (patient) => {
     setSelectedPatient(patient);
     setOpenDialog(true);
@@ -41,7 +60,10 @@ function PatientsList() {
     setOpenDialog(false);
     setSelectedPatient(null);
   };
-
+  const handleCloseDialogdetails = () => {
+    setOpenDetailsDialog(false);
+    setSelectedPatient(null);
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSelectedPatient({
@@ -109,17 +131,50 @@ const handleSubmit = async (e) => {
 
 
   
-  const handleDelete = (matricule) => {
-    if (window.confirm('Are you sure you want to delete this patient?')) {
-      axios.delete(`http://localhost:5000/api/patients/${matricule}`)
-        .then(response => {
-          setPatients(patients.filter(patient => patient.matricule !== matricule));
-        })
-        .catch(error => {
-          console.error('There was an error deleting the patient!', error);
+const handleDelete = (matricule) => {
+  if (window.confirm('Are you sure you want to delete this patient?')) {
+    axios.delete(`http://localhost:5000/api/patients/${matricule}`)
+      .then(response => {
+        setPatients(patients.filter(patient => patient.matricule !== matricule));
+
+        // Display success toast
+        toast.success('Patient supprimé avec succès !', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
         });
-    }
-  };
+      })
+      .catch(error => {
+          // Display error toast for appointment case
+          toast.error('Ce patient ne peut pas être supprimé car il a un rendez-vous.', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        console.error('There was an error deleting the patient!', error);
+      });
+  }
+};
+const handleViewDetails = async (patient) => {
+  try {
+    const response = await axios.get(`http://localhost:5000/api/patients/${patient.matricule}/details`);
+    setSelectedPatient(response.data.patient);
+    setPatientAntecedents(response.data.antecedents);
+    setPatientHabits(response.data.habits);
+    setOpenDetailsDialog(true);; // Ouvrir le dialogue pour afficher les détails du patient
+  } catch (error) {
+    console.error('There was an error fetching the patient details!', error);
+  }
+};
+
 
   const transformStatus = (value, type) => {
     if (type === 'marie') {
@@ -167,7 +222,14 @@ const handleSubmit = async (e) => {
           <TableBody>
             {patients.map(patient => (
               <TableRow key={patient.matricule}>
-                <TableCell>{patient.matricule}</TableCell>
+                 <TableCell>
+                  <Button 
+                    color="primary" 
+                    onClick={() => handleViewDetails(patient)}
+                  >
+                    {patient.matricule}
+                  </Button>
+                </TableCell>
                 <TableCell>{patient.nom}</TableCell>
                 <TableCell>{patient.prenom}</TableCell>
                 <TableCell>{patient.sexe}</TableCell>
@@ -210,6 +272,7 @@ const handleSubmit = async (e) => {
           </TableBody>
         </Table>
       </TableContainer>
+      <ToastContainer />
 
       {/* Dialog de modification */}
       <PatientEditDialog 
@@ -219,6 +282,13 @@ const handleSubmit = async (e) => {
         handleChange={handleChange}
         handleSubmit={handleSubmit}
         handleFileChange={handleFileChange}
+      />
+      <PatientDetailsDialog
+        open={openDetailsDialog}
+        handleClose={handleCloseDialogdetails }
+        patient={selectedPatient}
+        antecedents={patientAntecedents}
+        habits={patientHabits}
       />
     </div>
   );

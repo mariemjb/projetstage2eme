@@ -1,45 +1,44 @@
 /* Styles globaux pour le formulaire */
-.form-container {
-    
+.medical-conditions-form {
     background-color: #fff; /* Couleur de fond du formulaire */
     padding: 20px; /* Espacement intérieur */
     border-radius: 8px; /* Coins arrondis */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre pour un effet de profondeur */
     max-width: 800px; /* Largeur maximale du formulaire */
-    margin: 50px auto 20px 450px; /* Centre le formulaire avec un espacement vertical augmenté en haut */
+    margin: 50px auto; /* Centre le formulaire avec un espacement vertical augmenté en haut */
 }
 
-/* Styles pour les champs du formulaire */
-form {
-    display: flex;
-    flex-direction: column;
+/* Styles pour les sections du formulaire */
+.condition-section {
+    margin-bottom: 20px; /* Espacement entre les sections */
+    padding: 10px;
+    border-bottom: 1px solid #ddd; /* Bordure légère entre les sections */
 }
 
-.form-group {
-    margin-bottom: 15px; /* Espacement entre les champs */
+.condition-section h3 {
+    margin-bottom: 10px; /* Espacement sous le titre de la section */
+    font-size: 18px; /* Taille de la police du titre */
 }
 
-.form-group label {
+.condition-section label {
     display: block; /* Affiche le label en bloc pour qu'il occupe toute la largeur */
-    font-weight: bold; /* Rend le texte du label gras */
     margin-bottom: 5px; /* Espacement sous le label */
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group input[type="date"],
-.form-group input[type="tel"],
-.form-group select,
-.form-group textarea {
+.condition-section input[type="text"],
+.condition-section textarea,
+.condition-section input[type="number"],
+.condition-section select {
     width: 100%; /* Prend toute la largeur disponible */
     padding: 10px; /* Espacement intérieur */
     border: 1px solid #ddd; /* Bordure légère */
     border-radius: 4px; /* Coins arrondis pour les champs */
     box-sizing: border-box; /* Inclut le padding et la bordure dans la largeur totale */
+    margin-bottom: 10px; /* Espacement sous les champs */
 }
 
-.form-group textarea {
-    resize: vertical; /* Permet de redimensionner verticalement le textarea */
+.condition-section input[type="radio"] {
+    margin-right: 5px; /* Espacement à droite des boutons radio */
 }
 
 /* Styles pour le bouton de soumission */
@@ -52,22 +51,10 @@ button[type="submit"] {
     cursor: pointer; /* Changement du curseur au survol */
     font-size: 16px; /* Taille de la police */
     transition: background-color 0.3s ease; /* Effet de transition pour le changement de couleur */
+    display: block;
+    margin-top: 20px; /* Espacement au-dessus du bouton */
 }
 
 button[type="submit"]:hover {
     background-color: #0056b3; /* Couleur de fond au survol */
 }
-
-/* Styles pour le champ de fichier */
-input[type="file"] {
-    padding: 0; /* Supprime le padding par défaut */
-}
-
-.confirmation-message {
-    color: green;
-    font-weight: bold;
-    margin-bottom: 1em;
-}
-
-  
-

@@ -35,6 +35,7 @@ db.connect((err) => {
 });
 
 // Route pour gérer la soumission du formulaire
+// Route pour gérer la soumission du formulaire
 app.post('/api/patients', upload.single('pdf'), (req, res) => {
     const { matricule, nom, prenom, sexe, dateDeNaissance, age, adresse, nationalite, gouvernorat, telDomicile, telPortable, profession, taille, poids, globulesRouges, maritalStatus, vieSeul } = req.body;
     const pdf = req.file ? req.file.filename : null; // Sauvegarder le nom du fichier
@@ -51,6 +52,8 @@ app.post('/api/patients', upload.single('pdf'), (req, res) => {
         }
     });
 });
+
+
 
 // Route pour récupérer les patients
 app.get('/api/patients', (req, res) => {
@@ -308,6 +311,108 @@ app.get('/api/doctor/:id', (req, res) => {
       res.status(200).json(results[0]);
     });
   });
+
+// Endpoint to save medical condition data
+app.post('/api/medical-conditions', (req, res) => {
+    console.log('Received Body:', req.body); // Log the received body
+
+    const { conditions, habits } = req.body;
+
+    if (!Array.isArray(conditions) || !Array.isArray(habits)) {
+        return res.status(400).json({ message: 'Invalid data format' });
+    }
+
+    // Filtrer les conditions avec la réponse "oui"
+    const filteredConditions = conditions.filter(condition => condition.answer === 'oui');
+    
+    // Filtrer les habitudes avec la réponse "oui"
+    const filteredHabits = habits.filter(habit => habit.answerhab === 'oui');
+
+    if (filteredConditions.length === 0 && filteredHabits.length === 0) {
+        return res.status(400).json({ message: 'No conditions or habits with "Oui" found' });
+    }
+
+    // Requêtes pour les conditions médicales
+    const conditionQueries = filteredConditions.map(condition => {
+        return new Promise((resolve, reject) => {
+            const { id_antecedant, name, anciennete, traitement, equilibre, description, matricule } = condition;
+            const sql = `
+               INSERT INTO antecedant_medical (idantecedant, libelle_antecedant, anciennete, traitement, equilibre, description, matricule) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+            db.query(sql, [id_antecedant, name, anciennete, traitement, equilibre, description, matricule], (err, result) => {
+                if (err) {
+                    console.error('Database Error (Conditions):', err);
+                    return reject(err);
+                }
+                resolve(result);
+            });
+        });
+    });
+
+    // Requêtes pour les habitudes
+    const habitQueries = filteredHabits.map(habit => {
+        return new Promise((resolve, reject) => {
+            const { id_hab, namehab, quantite, matricule } = habit;
+            const sql = `
+               INSERT INTO habitude_vie (idhabitude, libelle, quantite, matricule) 
+               VALUES (?, ?, ?, ?)`;
+
+            db.query(sql, [id_hab, namehab, quantite, matricule], (err, result) => {
+                if (err) {
+                    console.error('Database Error (Habits):', err);
+                    return reject(err);
+                }
+                resolve(result);
+            });
+        });
+    });
+
+    // Exécuter toutes les requêtes
+    Promise.all([...conditionQueries, ...habitQueries])
+        .then(() => res.status(200).json({ message: 'Data successfully saved' }))
+        .catch(err => {
+            console.error('Error during processing:', err);
+            res.status(500).json({ message: 'Database error', error: err });
+        });
+});
+
+
+// Route pour obtenir les détails d'un patient avec les données des tables antecedant_medical et habitude
+app.get('/api/patients/:matricule/details', (req, res) => {
+    const matricule = req.params.matricule;
+
+    // Requête SQL pour obtenir les détails du patient
+    const patientQuery = 'SELECT * FROM patients WHERE matricule = ?';
+    const antecedentsQuery = 'SELECT * FROM antecedant_medical WHERE matricule = ?';
+    const habitsQuery = 'SELECT * FROM habitude_vie WHERE matricule = ?';
+
+    db.query(patientQuery, [matricule], (err, patientResults) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+
+        if (patientResults.length === 0) return res.status(404).json({ message: 'Patient not found' });
+
+        const patient = patientResults[0];
+
+        // Récupérer les antécédents médicaux
+        db.query(antecedentsQuery, [matricule], (err, antecedentsResults) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+
+            // Récupérer les habitudes
+            db.query(habitsQuery, [matricule], (err, habitsResults) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+
+                // Retourner toutes les données au frontend
+                res.json({
+                    patient,
+                    antecedents: antecedentsResults,
+                    habits: habitsResults
+                });
+            });
+        });
+    });
+});
+
 
 // Middleware pour gérer les erreurs 404
 app.use((req, res, next) => {

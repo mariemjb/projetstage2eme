@@ -7,6 +7,7 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'; // Icône pour les rendez-vous
 import ListIcon from '@mui/icons-material/List';
 import EventNoteIcon from '@mui/icons-material/EventNote'; // Icône pour l'affichage des rendez-vous
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import './Sidebar.css'; // Assurez-vous d'importer le fichier CSS
 
 function Sidebar() {
@@ -19,23 +20,27 @@ function Sidebar() {
         </ListItem>
         <ListItem button component={Link} to="/patients">
           <ListItemIcon><PeopleIcon /></ListItemIcon>
-          <ListItemText primary="Add Patients" />
+          <ListItemText primary="Ajouter Patients" />
+        </ListItem>
+        <ListItem button component={Link} to="/patientsdetails">
+          <ListItemIcon><InfoOutlinedIcon /></ListItemIcon>
+          <ListItemText primary="Details Du Patients" />
         </ListItem>
         <ListItem button component={Link} to="/patientslist">
           <ListItemIcon><ListIcon /></ListItemIcon>
-          <ListItemText primary="Patients List" />
+          <ListItemText primary="Liste Des Patients " />
         </ListItem>
         <ListItem button component={Link} to="/rendezvous/book">
           <ListItemIcon><CalendarTodayIcon /></ListItemIcon>
-          <ListItemText primary="Prise de rendez-vous" />
+          <ListItemText primary="Prise De Rendez-vous" />
         </ListItem>
         <ListItem button component={Link} to="/rendezvous">
           <ListItemIcon><EventNoteIcon /></ListItemIcon>
-          <ListItemText primary="Liste des Rendez-vous" />
+          <ListItemText primary="Liste Des Rendez-vous" />
         </ListItem>
         <ListItem button component={Link} to="/doctors">
           <ListItemIcon><LocalHospitalIcon /></ListItemIcon>
-          <ListItemText primary="Doctors" />
+          <ListItemText primary="Liste Des Medecins" />
         </ListItem>
       </List>
     </div>

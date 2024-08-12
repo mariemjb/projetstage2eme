@@ -7,6 +7,7 @@ import PatientsList from './pages/listpatient';
 import Doctors from './pages/doctor';
 import BookAppointment from './pages/BookAppointment';
 import Appointments from './pages/Appointment';
+import Details from './pages/patientdetails';
 import './App.css'; // Importer les styles CSS
 
 
@@ -22,6 +23,7 @@ function App() {
               <Route path="/" element={<Navigate to="/dashboard" />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/patients" element={<Patients />} />
+              <Route path="/patientsdetails" element={<Details />} />
               <Route path="/patientslist" element={<PatientsList />} /> 
               <Route path="/rendezvous/book" element={<BookAppointment />} />
               <Route path="/rendezvous" element={<Appointments />} />

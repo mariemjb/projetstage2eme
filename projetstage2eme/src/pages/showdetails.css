@@ -1,0 +1,54 @@
+/* PatientDetailsDialog.css */
+.custom-dialog {
+    width: 950px; /* Adjust the width as needed */
+    max-width: 950px; /* Set a maximum width */
+  }
+  
+  .custom-dialog-content {
+    max-height: 80vh; /* Adjust the maximum height as needed */
+    overflow-y: auto; /* Enable vertical scrolling if content overflows */
+  }
+.dialog-title {
+    background-color: #f5f5f5; /* Light gray background for the title */
+    color: #333; /* Dark text color for better readability */
+  }
+  
+  .dialog-content {
+    padding: 16px; /* Padding inside the dialog content */
+  }
+  
+  .dialog-content p {
+    margin: 8px 0; /* Margin around paragraph elements */
+    font-size: 14px; /* Font size for text */
+  }
+  
+  .dialog-content ul {
+    list-style-type: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+  }
+  
+  .dialog-content ul li {
+    border-bottom: 1px solid #cccccc00; /* Add a line between items */
+    padding: 8px 0; /* Add some padding */
+  }
+  .dialog-content ul li:last-child {
+    border-bottom: none; /* Remove the line for the last item */
+  }
+  
+  .dialog-content .no-data {
+    
+        font-style: italic;
+        color: #888;
+      
+  }
+  
+  .dialog-actions {
+    padding: 8px; /* Padding for action buttons */
+    background-color: #f5f5f5; /* Light gray background for actions */
+  }
+  
+  .dialog-actions button {
+    color: #007bff; /* Primary color for the button */
+  }
+  
