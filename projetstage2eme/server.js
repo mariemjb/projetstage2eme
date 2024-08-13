@@ -33,6 +33,30 @@ db.connect((err) => {
     if (err) throw err;
     console.log('Connected to database');
 });
+// Route pour l'authentification
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required' });
+    }
+
+    const sql = 'SELECT * FROM users WHERE username = ? AND password = ?'; // Remplacez 'users' par le nom de votre table
+    const values = [username, password]; // Assurez-vous que le mot de passe est bien stocké de manière sécurisée, par exemple en utilisant un hash
+
+    db.query(sql, values, (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ message: 'Database error' });
+        }
+
+        if (results.length > 0) {
+            res.status(200).json({ message: 'Login successful' });
+        } else {
+            res.status(401).json({ message: 'Invalid credentials' });
+        }
+    });
+});
 
 // Route pour gérer la soumission du formulaire
 app.post('/api/patients', upload.single('pdf'), (req, res) => {

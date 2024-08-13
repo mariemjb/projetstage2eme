@@ -7,12 +7,17 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'; // Icône pour les rendez-vous
 import ListIcon from '@mui/icons-material/List';
 import EventNoteIcon from '@mui/icons-material/EventNote'; // Icône pour l'affichage des rendez-vous
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // Icône pour le profil utilisateur
 import './Sidebar.css'; // Assurez-vous d'importer le fichier CSS
 
 function Sidebar() {
   return (
     <div className="sidebar">
       <List>
+        <ListItem button component={Link} to="/profile">
+          <ListItemIcon><AccountCircleIcon /></ListItemIcon>
+          <ListItemText primary="Profile" />
+        </ListItem>
         <ListItem button component={Link} to="/dashboard">
           <ListItemIcon><DashboardIcon /></ListItemIcon>
           <ListItemText primary="Dashboard" />
