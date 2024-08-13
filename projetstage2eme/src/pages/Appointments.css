@@ -1,12 +1,12 @@
 /* Container styles */
 .appointments-container {
-  margin: 20px auto 20px 20%; /* Center content and adjust left margin */
+  margin: 20px auto 20px 10%; /* Center content and adjust left margin */
   /*max-width: 80%; /* Limit width of the container */
   background-color: #f9f9f9; /* Light background */
   border-radius: 8px; /* Rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
   padding: 20px; /* Padding around the container */
-  width: 800px;
+  width: 1200px;
 }
 
 /* Header styles */

@@ -238,12 +238,12 @@ const handleViewDetails = async (patient) => {
             {patients.map(patient => (
               <TableRow key={patient.matricule}>
                  <TableCell>
-                  <Button 
-                    color="primary" 
+                  <p
+                    style={{cursor: "pointer", color: "blue"}}
                     onClick={() => handleViewDetails(patient)}
                   >
                     {patient.matricule}
-                  </Button>
+                  </p>
                 </TableCell>
                 <TableCell>{patient.nom}</TableCell>
                 <TableCell>{patient.prenom}</TableCell>

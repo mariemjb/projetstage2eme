@@ -21,7 +21,8 @@ function Appointments() {
   const [editAppointment, setEditAppointment] = useState({
     id_medecin: '',
     id_patient: '',
-    date_rendez_vous: ''
+    date_rendez_vous: '',
+    oldDate: ''
   });
   const [saveMessage, setSaveMessage] = useState(''); // Ajouter cet état
 
@@ -109,16 +110,20 @@ function Appointments() {
   };
 
   const openEditModal = (appointment) => {
+    console.log("the appoitment",appointment)
+    const oldDate = new Date(appointment.date_rendez_vous).toLocaleString()
     setEditAppointment({
       id_medecin: appointment.id_medecin,
       id_patient: appointment.id_patient,
-      date_rendez_vous: appointment.date_rendez_vous
+      date_rendez_vous: appointment.date_rendez_vous,
+      oldDate: oldDate
     });
     setIsEditModalOpen(true);
   };
 
   const handleSaveChanges = async () => {
     try {
+      console.log("editAppointment",editAppointment)
       await axios.put('http://localhost:5000/api/appointments', editAppointment);
       setAppointments(appointments.map(appt => 
         appt.date_rendez_vous === editAppointment.date_rendez_vous ? editAppointment : appt

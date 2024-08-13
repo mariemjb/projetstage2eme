@@ -25,37 +25,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'root',
+    password: 'gestion_scolaire123',
     database: 'patients'
 });
 
 db.connect((err) => {
     if (err) throw err;
     console.log('Connected to database');
-});
-// Route pour l'authentification
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
-
-    const sql = 'SELECT * FROM users WHERE username = ? AND password = ?'; // Remplacez 'users' par le nom de votre table
-    const values = [username, password]; // Assurez-vous que le mot de passe est bien stocké de manière sécurisée, par exemple en utilisant un hash
-
-    db.query(sql, values, (err, results) => {
-        if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ message: 'Database error' });
-        }
-
-        if (results.length > 0) {
-            res.status(200).json({ message: 'Login successful' });
-        } else {
-            res.status(401).json({ message: 'Invalid credentials' });
-        }
-    });
 });
 
 // Route pour gérer la soumission du formulaire
@@ -339,15 +315,18 @@ app.get('/api/getappointments', (req, res) => {
 
 // Route pour modifier les rendez-vous
 app.put('/api/appointments', (req, res) => {
-    const { id_medecin, id_patient, date_rendez_vous } = req.body;
-    console.log('Received data:', { id_medecin, id_patient, date_rendez_vous });
+    const { id_medecin, id_patient, date_rendez_vous, oldDate } = req.body;
 
+    console.log('Received data:', { id_medecin, id_patient, date_rendez_vous, oldDate });
+    console.log("old data",oldDate)
     const date = new Date(date_rendez_vous);
+    const old_Date = new Date(oldDate);
     if (!id_medecin || !id_patient || !date_rendez_vous) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    const formattedOldDate = `${old_Date.getFullYear()}-${String(old_Date.getMonth() + 1).padStart(2, '0')}-${String(old_Date.getDate()).padStart(2, '0')} ${String(old_Date.getHours()).padStart(2, '0')}:${String(old_Date.getMinutes()).padStart(2, '0')}:${String(old_Date.getSeconds()).padStart(2, '0')}`;
 
     // Vérifiez s'il existe une entrée avec cette date pour cet id_medecin et id_patient
     const checkSql = `SELECT * FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?`;
@@ -365,8 +344,8 @@ app.put('/api/appointments', (req, res) => {
         }
 
         // Si aucun conflit, procédez à la mise à jour
-        const updateSql = `UPDATE rendez_vous SET date_rendez_vous = ? WHERE id_medecin = ? AND id_patient = ?`;
-        const updateValues = [formattedDate, id_medecin, id_patient];
+        const updateSql = `UPDATE rendez_vous SET date_rendez_vous = ? WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?`;
+        const updateValues = [formattedDate, id_medecin, id_patient, formattedOldDate];
     
         console.log('Executing SQL:', { sql: updateSql, values: updateValues });
     

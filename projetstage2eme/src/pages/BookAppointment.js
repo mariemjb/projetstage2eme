@@ -15,7 +15,13 @@ function BookAppointment() {
   useEffect(() => {
     // Fetch doctors
     axios.get('http://localhost:5000/api/doctors')
-      .then(response => setDoctors(response.data))
+        .then(response => {
+
+              setDoctors(response.data)
+              console.log("response",response.data)
+        }
+
+           )
       .catch(error => console.error('Error fetching doctors:', error));
 
     // Fetch patients
@@ -89,11 +95,10 @@ function BookAppointment() {
     padding: '30px',
     borderRadius: '8px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    maxWidth: '1200px',
-    width: '95%',
+    width: '1200px',
     boxSizing: 'border-box',
     textAlign: 'center',
-    margin: '20px auto'
+
   };
 
   const groupStyle = {

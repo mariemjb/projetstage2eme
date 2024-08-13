@@ -16,10 +16,9 @@ body {
     border-radius: 8px; /* Coins arrondis */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre pour un effet de profondeur */
     max-width: 1200px; /* Largeur maximale du formulaire augmentée */
-    width: 90%; /* Occupe 90% de la largeur de la fenêtre */
     box-sizing: border-box; /* Inclut le padding et la bordure dans la largeur totale */
     text-align: center; /* Centre le texte à l'intérieur du conteneur */
-    margin: 20px auto; /* Centre le formulaire horizontalement et ajoute un espacement vertical */
+    margin: 0px 0 0 10%; /* Centre le formulaire horizontalement et ajoute un espacement vertical */
 }
 
 /* Styles pour le titre */

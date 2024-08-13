@@ -1,3 +1,4 @@
+
 /* Adjust the table to fit within the content area */
 .table-container1 {
     margin: 0px auto 20px 15%; /* Smaller margin to avoid overlapping */
@@ -32,5 +33,3 @@
     padding: 15px; /* Padding for cells */
     text-align: center; /* Center align text */
 }
-
-
