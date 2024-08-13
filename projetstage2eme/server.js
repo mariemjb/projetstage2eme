@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'gestion_scolaire123',
+    password: 'root',
     database: 'patients'
 });
 
@@ -59,6 +59,7 @@ app.post('/api/login', (req, res) => {
 });
 
 // Route pour gérer la soumission du formulaire
+// Route pour gérer la soumission du formulaire
 app.post('/api/patients', upload.single('pdf'), (req, res) => {
     const { matricule, nom, prenom, sexe, dateDeNaissance, age, adresse, nationalite, gouvernorat, telDomicile, telPortable, profession, taille, poids, globulesRouges, maritalStatus, vieSeul } = req.body;
     const pdf = req.file ? req.file.filename : null; // Sauvegarder le nom du fichier
@@ -75,6 +76,8 @@ app.post('/api/patients', upload.single('pdf'), (req, res) => {
         }
     });
 });
+
+
 
 // Route pour récupérer les patients
 app.get('/api/patients', (req, res) => {
@@ -229,7 +232,7 @@ app.get('/api/patients/:id/dossier-medical', (req, res) => {
 });
 
 app.get('/api/doctors', (req, res) => {
-    db.query('SELECT * FROM patients.medecin;', (err, results) => {
+    db.query('SELECT * FROM patients.medecin AS d JOIN patients.departement AS dept ON d.id_dept = dept.id_departement JOIN patients.service AS s ON dept.id_service = s.idservice;', (err, results) => {
         if (err) {
             console.error(err);
             res.status(500).json({ error: 'Database error' });
@@ -238,8 +241,6 @@ app.get('/api/doctors', (req, res) => {
         }
     });
 });
-// Route pour vérifier la disponibilité d'un médecin
-
 // Route pour vérifier la disponibilité d'un médecin
 app.get('/api/check-availability/:id_medecin/:date_rendez_vous', (req, res) => {
     const { id_medecin, date_rendez_vous } = req.params;
@@ -293,14 +294,6 @@ app.get('/api/check-availability/:id_medecin/:date_rendez_vous', (req, res) => {
     });
 });
 
-
-     
-    
-
-  
-
-
-
 // Route pour créer un rendez-vous
 app.post('/api/appointments', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous } = req.body;
@@ -343,65 +336,8 @@ app.get('/api/getappointments', (req, res) => {
       res.status(200).json(results);
     });
   });
-  
-// Route pour obtenir les détails d'un médecin par son ID
-app.get('/api/doctor/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = 'SELECT idmedecin, nom, prenom, id_dept, specialite, études, statut_congé FROM medecin WHERE idmedecin = ?';
-    db.query(sql, [id], (err, results) => {
-        if (err) {
-            console.error('Error executing SQL query:', err);
-            return res.status(500).json({ error: 'Database error' });
-        }
-        res.status(200).json(results[0]);
-    });
-});
 
-  
-  // Route pour obtenir les détails d'un patient par son ID
-  app.get('/api/patient/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = 'SELECT * FROM patients WHERE matricule = ?';
-    db.query(sql, [id], (err, results) => {
-      if (err) {
-        console.error('Error executing SQL query:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.status(200).json(results[0]);
-    });
-  });
-
-
-
-app.delete('/api/deleteappointments', (req, res) => {
-    const { id_medecin, id_patient, date_rendez_vous } = req.body;
-  
-    if (!id_medecin || !id_patient || !date_rendez_vous) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-  
-    // Convertir la date ISO 8601 en format DATETIME
-    const date = new Date(date_rendez_vous);
-    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-  
-    const sql = 'DELETE FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?';
-    const values = [id_medecin, id_patient, formattedDate];
-  
-    db.query(sql, values, (err, results) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: 'Appointment not found' });
-      }
-      res.status(200).json({ message: 'Appointment deleted successfully' });
-    });
-});
-
-  
-   
-  
+// Route pour modifier les rendez-vous
 app.put('/api/appointments', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous } = req.body;
     console.log('Received data:', { id_medecin, id_patient, date_rendez_vous });
@@ -444,6 +380,223 @@ app.put('/api/appointments', (req, res) => {
     });
 });
 
+  
+// Route pour obtenir les détails d'un médecin par son ID
+app.get('/api/doctor/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT idmedecin, nom, prenom, id_dept, specialite, études, statut_congé FROM medecin WHERE idmedecin = ?';
+    db.query(sql, [id], (err, results) => {
+        if (err) {
+            console.error('Error executing SQL query:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.status(200).json(results[0]);
+    });
+});
+  
+  // Route pour obtenir les détails d'un patient par son ID
+  app.get('/api/patient/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT * FROM patients WHERE matricule = ?';
+    db.query(sql, [id], (err, results) => {
+      if (err) {
+        console.error('Error executing SQL query:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.status(200).json(results[0]);
+    });
+  });
+   // Route pour supprimer un rendez vous
+  app.delete('/api/deleteappointments', (req, res) => {
+    const { id_medecin, id_patient, date_rendez_vous } = req.body;
+  
+    if (!id_medecin || !id_patient || !date_rendez_vous) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+  
+    // Convertir la date ISO 8601 en format DATETIME
+    const date = new Date(date_rendez_vous);
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+  
+    const sql = 'DELETE FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?';
+    const values = [id_medecin, id_patient, formattedDate];
+  
+    db.query(sql, values, (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Appointment not found' });
+      }
+      res.status(200).json({ message: 'Appointment deleted successfully' });
+    });
+});
+// Endpoint to save medical condition data
+app.post('/api/medical-conditions', (req, res) => {
+    console.log('Received Body:', req.body); // Log the received body
+
+    const { conditions, habits } = req.body;
+
+    if (!Array.isArray(conditions) || !Array.isArray(habits)) {
+        return res.status(400).json({ message: 'Invalid data format' });
+    }
+
+    // Filtrer les conditions avec la réponse "oui"
+    const filteredConditions = conditions.filter(condition => condition.answer === 'oui');
+    
+    // Filtrer les habitudes avec la réponse "oui"
+    const filteredHabits = habits.filter(habit => habit.answerhab === 'oui');
+
+    if (filteredConditions.length === 0 && filteredHabits.length === 0) {
+        return res.status(400).json({ message: 'No conditions or habits with "Oui" found' });
+    }
+
+    // Requêtes pour les conditions médicales
+    const conditionQueries = filteredConditions.map(condition => {
+        return new Promise((resolve, reject) => {
+            const { id_antecedant, name, anciennete, traitement, equilibre, description, matricule } = condition;
+            const sql = `
+               INSERT INTO antecedant_medical (idantecedant, libelle_antecedant, anciennete, traitement, equilibre, description, matricule) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+            db.query(sql, [id_antecedant, name, anciennete, traitement, equilibre, description, matricule], (err, result) => {
+                if (err) {
+                    console.error('Database Error (Conditions):', err);
+                    return reject(err);
+                }
+                resolve(result);
+            });
+        });
+    });
+
+    // Requêtes pour les habitudes
+    const habitQueries = filteredHabits.map(habit => {
+        return new Promise((resolve, reject) => {
+            const { id_hab, namehab, quantite, matricule } = habit;
+            const sql = `
+               INSERT INTO habitude_vie (idhabitude, libelle, quantite, matricule) 
+               VALUES (?, ?, ?, ?)`;
+
+            db.query(sql, [id_hab, namehab, quantite, matricule], (err, result) => {
+                if (err) {
+                    console.error('Database Error (Habits):', err);
+                    return reject(err);
+                }
+                resolve(result);
+            });
+        });
+    });
+
+    // Exécuter toutes les requêtes
+    Promise.all([...conditionQueries, ...habitQueries])
+        .then(() => res.status(200).json({ message: 'Data successfully saved' }))
+        .catch(err => {
+            console.error('Error during processing:', err);
+            res.status(500).json({ message: 'Database error', error: err });
+        });
+});
+
+
+// Route pour obtenir les détails d'un patient avec les données des tables antecedant_medical et habitude
+app.get('/api/patients/:matricule/details', (req, res) => {
+    const matricule = req.params.matricule;
+
+    // Requête SQL pour obtenir les détails du patient
+    const patientQuery = 'SELECT * FROM patients WHERE matricule = ?';
+    const antecedentsQuery = 'SELECT * FROM antecedant_medical WHERE matricule = ?';
+    const habitsQuery = 'SELECT * FROM habitude_vie WHERE matricule = ?';
+
+    db.query(patientQuery, [matricule], (err, patientResults) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+
+        if (patientResults.length === 0) return res.status(404).json({ message: 'Patient not found' });
+
+        const patient = patientResults[0];
+
+        // Récupérer les antécédents médicaux
+        db.query(antecedentsQuery, [matricule], (err, antecedentsResults) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+
+            // Récupérer les habitudes
+            db.query(habitsQuery, [matricule], (err, habitsResults) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+
+                // Retourner toutes les données au frontend
+                res.json({
+                    patient,
+                    antecedents: antecedentsResults,
+                    habits: habitsResults
+                });
+            });
+        });
+    });
+});
+// Route pour obtenir la liste des patients du docteur
+app.get('/api/doctors/:idmedecin/liste', (req, res) => {
+    const id_medecin = req.params.idmedecin;
+
+    // Requête SQL pour mettre à jour la table consultation
+    const majQuery = `
+        INSERT IGNORE INTO patients.consultation (idmedecin, idpatient, date)
+        SELECT id_medecin, id_patient, date_rendez_vous
+        FROM patients.rendez_vous
+        WHERE date_rendez_vous < NOW();
+    `;
+
+    // Requête SQL pour obtenir les détails du docteur
+    const medecinQuery = 'SELECT * FROM medecin WHERE idmedecin = ?';
+
+    // Requête SQL pour obtenir les détails des patients associés
+    const patientsQuery = `
+        SELECT p.*, c.date
+        FROM consultation AS c
+        JOIN patients.patients AS p ON c.idpatient = p.matricule
+        JOIN patients.medecin AS m ON c.idmedecin = m.idmedecin
+        WHERE c.idmedecin = ?;
+    `;
+
+    // Mise à jour de la table consultation
+    db.query(majQuery, (err) => {
+        if (err) {
+            // Vérifier si l'erreur est liée à une duplication (ajustez le message d'erreur si nécessaire)
+            if (err.code === 'ER_DUP_ENTRY') {
+                console.warn('Duplicate entry warning during update:', err); // Log l'avertissement pour débogage
+            } else {
+                console.error('Database error during update:', err); // Log l'erreur pour débogage
+            }
+        }
+
+        // Récupérer les détails du docteur
+        db.query(medecinQuery, [id_medecin], (err, doctorResults) => {
+            if (err) {
+                console.error('Error fetching doctor details:', err); // Log l'erreur pour débogage
+                return res.status(500).json({ error: 'Database error' });
+            }
+
+            if (doctorResults.length === 0) {
+                return res.status(404).json({ message: 'Doctor not found' });
+            }
+
+            const doctor = doctorResults[0];
+
+            // Récupérer les patients associés
+            db.query(patientsQuery, [id_medecin], (err, patientResults) => {
+                if (err) {
+                    console.error('Error fetching patient details:', err); // Log l'erreur pour débogage
+                    return res.status(500).json({ error: 'Database error' });
+                }
+
+                // Retourner toutes les données au frontend
+                res.json({
+                    doctor,
+                    patients: patientResults
+                });
+            });
+        });
+    });
+});
+
 // Route pour obtenir les statistiques du tableau de bord
 app.get('/api/dashboard/stats', (req, res) => {
     const sql = `
@@ -464,7 +617,10 @@ app.get('/api/dashboard/stats', (req, res) => {
         }
     });
 });
-
+// Middleware pour gérer les erreurs 404
+app.use((req, res, next) => {
+    res.status(404).json({ error: 'Not Found' });
+});
 // Démarrez le serveur
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

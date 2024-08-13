@@ -71,7 +71,14 @@ function Appointments() {
         .catch(error => console.error('Error fetching patient details:', error));
     }
   };
-
+  const refreshList = async () => {
+    try {
+        const response = await axios.get('http://localhost:5000/api/getappointments');
+        setAppointments(response.data);
+    } catch (error) {
+        console.error('There was an error fetching the appointments!', error);
+    }
+  };
   const handleDeleteClick = (appointment) => {
     setSelectedAppointment(appointment);
     setDeleteMessage('');
@@ -121,6 +128,7 @@ function Appointments() {
         setSaveMessage('');
         setIsEditModalOpen(false);
       }, 3000);
+      refreshList();
     } catch (error) {
       console.error('Error updating appointment:', error);
       setSaveMessage('Erreur lors de la sauvegarde.'); // Message d'erreur

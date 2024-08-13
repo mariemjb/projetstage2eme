@@ -1,7 +1,8 @@
 /* Adjust the table to fit within the content area */
-.table-container {
-    margin: 0px auto 20px 25%; /* Smaller margin to avoid overlapping */
+.table-container1 {
+    margin: 0px auto 20px 15%; /* Smaller margin to avoid overlapping */
     max-width: 100%; /* Full width within the content area */
+    width: 1400px;
     background-color: #fff; /* White background for the table */
     border-radius: 8px; /* Rounded corners */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
@@ -32,27 +33,4 @@
     text-align: center; /* Center align text */
 }
 
-/* Button styles */
-.table tbody .MuiButton-root {
-    margin: 0 2px; /* Margin between buttons */
-}
 
-.table tbody .MuiButton-outlinedPrimary {
-    border-color: #007bff; /* Outline color for primary button */
-    color: #007bff; /* Text color for primary button */
-}
-
-.table tbody .MuiButton-outlinedSecondary {
-    border-color: #dc3545; /* Outline color for secondary button */
-    color: #dc3545; /* Text color for secondary button */
-}
-
-.table tbody .MuiButton-outlinedPrimary:hover {
-    background-color: #007bff; /* Background on hover for primary button */
-    color: white; /* White text on hover */
-}
-
-.table tbody .MuiButton-outlinedSecondary:hover {
-    background-color: #dc3545; /* Background on hover for secondary button */
-    color: white; /* White text on hover */
-}
