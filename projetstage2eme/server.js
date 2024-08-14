@@ -318,20 +318,27 @@ app.put('/api/appointments', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous, oldDate } = req.body;
 
     console.log('Received data:', { id_medecin, id_patient, date_rendez_vous, oldDate });
-    console.log("old data",oldDate)
+
     const date = new Date(date_rendez_vous);
     const old_Date = new Date(oldDate);
+
     if (!id_medecin || !id_patient || !date_rendez_vous) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-    const formattedOldDate = `${old_Date.getFullYear()}-${String(old_Date.getMonth() + 1).padStart(2, '0')}-${String(old_Date.getDate()).padStart(2, '0')} ${String(old_Date.getHours()).padStart(2, '0')}:${String(old_Date.getMinutes()).padStart(2, '0')}:${String(old_Date.getSeconds()).padStart(2, '0')}`;
+    const formatDate = (date) => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    };
+
+    const formattedDate = formatDate(date);
+    const formattedOldDate = formatDate(old_Date);
+
+    console.log('Formatted dates:', { formattedDate, formattedOldDate });
 
     // Vérifiez s'il existe une entrée avec cette date pour cet id_medecin et id_patient
     const checkSql = `SELECT * FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?`;
     const checkValues = [id_medecin, id_patient, formattedDate];
-  
+
     db.query(checkSql, checkValues, (err, results) => {
         if (err) {
             console.error('Database error:', err);
@@ -346,20 +353,25 @@ app.put('/api/appointments', (req, res) => {
         // Si aucun conflit, procédez à la mise à jour
         const updateSql = `UPDATE rendez_vous SET date_rendez_vous = ? WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?`;
         const updateValues = [formattedDate, id_medecin, id_patient, formattedOldDate];
-    
+
         console.log('Executing SQL:', { sql: updateSql, values: updateValues });
-    
+
         db.query(updateSql, updateValues, (err, results) => {
             if (err) {
                 console.error('Database error:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
+
+            console.log('Update results:', results);
+
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ error: 'Appointment not found' });
+            }
+
             res.status(200).json({ message: 'Appointment updated successfully' });
         });
     });
 });
-
-  
 // Route pour obtenir les détails d'un médecin par son ID
 app.get('/api/doctor/:id', (req, res) => {
     const { id } = req.params;
