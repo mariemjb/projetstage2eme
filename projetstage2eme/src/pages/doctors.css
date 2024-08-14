@@ -1,9 +1,9 @@
 
 /* Adjust the table to fit within the content area */
 .table-container1 {
-    margin: 0px auto 20px 15%; /* Smaller margin to avoid overlapping */
-    max-width: 100%; /* Full width within the content area */
-    width: 1400px;
+   /* margin: 20px auto 20px 15%; /* Smaller margin to avoid overlapping */
+    /*max-width: 100%; /* Full width within the content area */
+    width: 1800px;
     background-color: #fff; /* White background for the table */
     border-radius: 8px; /* Rounded corners */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
@@ -16,7 +16,7 @@
     background-color: #007bff; /* Background color for header */
     color: white; /* Text color for header */
     font-weight: bold; /* Bold text in header */
-    padding: 15px; /* Padding for header cells */
+    padding: 50px; /* Padding for header cells */
 }
 
 /* Row styles */
@@ -30,6 +30,6 @@
 
 /* Cell styles */
 .table tbody td {
-    padding: 15px; /* Padding for cells */
+    padding: 50px; /* Padding for cells */
     text-align: center; /* Center align text */
 }

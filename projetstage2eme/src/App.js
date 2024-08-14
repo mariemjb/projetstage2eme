@@ -8,6 +8,9 @@ import DoctorsList from './pages/doctor';
 import BookAppointment from './pages/BookAppointment';
 import Appointments from './pages/Appointment';
 import Details from './pages/patientdetails';
+import Recommandation from './pages/recommendation';
+import SelectDoctorForm from './pages/selectdoctor';
+import DispoDoctor from './pages/doctordispo';
 import './App.css'; // Importer les styles CSS
 
 
@@ -29,6 +32,9 @@ function App() {
               <Route path="/rendezvous/book" element={<BookAppointment />} />
               <Route path="/rendezvous" element={<Appointments />} />
               <Route path="/doctors" element={<DoctorsList />} />
+              <Route path="/recommandation" element={<Recommandation />} />
+              <Route path="/select-doctor" element={<SelectDoctorForm />} />
+              <Route path="/doctor_dispo" element={<DispoDoctor />} />
             </Routes>
           </div>
         </div>
