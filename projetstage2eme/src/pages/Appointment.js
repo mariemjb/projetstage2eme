@@ -57,6 +57,7 @@ function Appointments() {
   };
 
   const togglePatientDetails = (id, date) => {
+
     if (visiblePatient === id && selectedAppointmentDate === date) {
       setVisiblePatient(null);
       setSelectedPatient(null);
@@ -240,14 +241,22 @@ function Appointments() {
       </div>
 
       <div ref={patientDetailsRef}>
-        {selectedPatient && visiblePatient === selectedPatient.idpatient && (
+        {console.log("selectedPatient", selectedPatient)}
+        {console.log("visiblePatient", visiblePatient)}
+        {selectedPatient && visiblePatient === selectedPatient.matricule && (
           <div className="details-container">
             <h3>Détails du Patient</h3>
+            {console.log(selectedPatient)}
             <p><strong>ID:</strong> {selectedPatient.idpatient}</p>
             <p><strong>Nom:</strong> {selectedPatient.nom}</p>
             <p><strong>Prénom:</strong> {selectedPatient.prenom}</p>
-            <p><strong>Date de Naissance:</strong> {new Date(selectedPatient.date_naissance).toLocaleDateString()}</p>
-            <p><strong>Numéro de Téléphone:</strong> {selectedPatient.telephone}</p>
+            <p><strong>Date de Naissance:</strong> {new Date(selectedPatient.date_de_naissance).toLocaleDateString()}</p>
+            <p><strong>Age:</strong> {selectedPatient.age}</p>
+            <p><strong>Nationalite:</strong> {selectedPatient.nationalite}</p>
+            <p><strong>Adresse:</strong> {selectedPatient.adresse}</p>
+            <p><strong>Gouvernorat:</strong> {selectedPatient.gouvernorat}</p>
+            <p><strong>Numéro de Téléphone domicile:</strong> {selectedPatient.tel_domicile}</p>
+            <p><strong>Numéro de Téléphone portable:</strong> {selectedPatient.tel_portable}</p>
           </div>
         )}
       </div>
