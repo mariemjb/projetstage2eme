@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const cors = require('cors');
 const neo4j = require('neo4j-driver');
+const axios = require('axios');
 const app = express();
 const port = 5000;
 // Servir les fichiers statiques depuis le dossier 'uploads'
@@ -26,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'gestion_scolaire123',
+    password: 'root',
     database: 'patients'
 });
 
@@ -155,11 +156,6 @@ app.put('/api/patients/:id', upload.single('pdf'), (req, res) => {
         });
     }
 });
-
-
-
-
-
 
 
 // Route pour supprimer un patient
@@ -418,7 +414,7 @@ app.get('/api/doctor/:id', (req, res) => {
 app.post('/api/medical-conditions', (req, res) => {
     console.log('Received Body:', req.body); // Log the received body
 
-    const { conditions, habits } = req.body;
+    const { conditions, habits, matricule } = req.body;
 
     if (!Array.isArray(conditions) || !Array.isArray(habits)) {
         return res.status(400).json({ message: 'Invalid data format' });
@@ -434,50 +430,112 @@ app.post('/api/medical-conditions', (req, res) => {
         return res.status(400).json({ message: 'No conditions or habits with "Oui" found' });
     }
 
-    // Requêtes pour les conditions médicales
-    const conditionQueries = filteredConditions.map(condition => {
-        return new Promise((resolve, reject) => {
-            const { id_antecedant, name, anciennete, traitement, equilibre, description, matricule } = condition;
-            const sql = `
-               INSERT INTO antecedant_medical (idantecedant, libelle_antecedant, anciennete, traitement, equilibre, description, matricule) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    // SQL queries for checking existing records
+    const checkConsultationSql = 'SELECT * FROM antecedant_medical WHERE matricule = ?';
+    const checkHabitSql = 'SELECT * FROM habitude_vie WHERE matricule = ?';
 
-            db.query(sql, [id_antecedant, name, anciennete, traitement, equilibre, description, matricule], (err, result) => {
+    // Start a transaction
+    db.beginTransaction((err) => {
+        if (err) {
+            console.error('Transaction Error:', err);
+            return res.status(500).json({ message: 'Transaction error', error: err });
+        }
+
+        // Check for existing consultations and habits in parallel
+        const checkConsultationPromise = new Promise((resolve, reject) => {
+            db.query(checkConsultationSql, [matricule], (err, results) => {
                 if (err) {
-                    console.error('Database Error (Conditions):', err);
-                    return reject(err);
+                    return reject({ type: 'consultation', error: err });
                 }
-                resolve(result);
+                resolve(results.length > 0);
             });
         });
-    });
 
-    // Requêtes pour les habitudes
-    const habitQueries = filteredHabits.map(habit => {
-        return new Promise((resolve, reject) => {
-            const { id_hab, namehab, quantite, matricule } = habit;
-            const sql = `
-               INSERT INTO habitude_vie (idhabitude, libelle, quantite, matricule) 
-               VALUES (?, ?, ?, ?)`;
-
-            db.query(sql, [id_hab, namehab, quantite, matricule], (err, result) => {
+        const checkHabitPromise = new Promise((resolve, reject) => {
+            db.query(checkHabitSql, [matricule], (err, results) => {
                 if (err) {
-                    console.error('Database Error (Habits):', err);
-                    return reject(err);
+                    return reject({ type: 'habit', error: err });
                 }
-                resolve(result);
+                resolve(results.length > 0);
             });
         });
-    });
 
-    // Exécuter toutes les requêtes
-    Promise.all([...conditionQueries, ...habitQueries])
-        .then(() => res.status(200).json({ message: 'Data successfully saved' }))
-        .catch(err => {
-            console.error('Error during processing:', err);
-            res.status(500).json({ message: 'Database error', error: err });
-        });
+        Promise.all([checkConsultationPromise, checkHabitPromise])
+            .then(([consultationExists, habitExists]) => {
+                if (consultationExists || habitExists) {
+                    let message = 'Record already exists for this patient';
+                    if (consultationExists && habitExists) {
+                        message = 'Consultation and habit records already exist for this patient';
+                    } 
+                    return db.rollback(() => {
+                        res.status(400).json({ message });
+                    });
+                }
+
+                // Requêtes pour les conditions médicales
+                const conditionQueries = filteredConditions.map(condition => {
+                    return new Promise((resolve, reject) => {
+                        const { id_antecedant, name, anciennete, traitement, equilibre, description, matricule } = condition;
+                        const sql = `
+                           INSERT INTO antecedant_medical (idantecedant, libelle_antecedant, anciennete, traitement, equilibre, description, matricule) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+                        db.query(sql, [id_antecedant, name, anciennete, traitement, equilibre, description, matricule], (err, result) => {
+                            if (err) {
+                                return reject(err);
+                            }
+                            resolve(result);
+                        });
+                    });
+                });
+
+                // Requêtes pour les habitudes
+                const habitQueries = filteredHabits.map(habit => {
+                    return new Promise((resolve, reject) => {
+                        const { id_hab, namehab, quantite, matricule } = habit;
+                        const sql = `
+                           INSERT INTO habitude_vie (idhabitude, libelle, quantite, matricule) 
+                           VALUES (?, ?, ?, ?)`;
+
+                        db.query(sql, [id_hab, namehab, quantite, matricule], (err, result) => {
+                            if (err) {
+                                return reject(err);
+                            }
+                            resolve(result);
+                        });
+                    });
+                });
+
+                // Exécuter toutes les requêtes
+                Promise.all([...conditionQueries, ...habitQueries])
+                    .then(() => {
+                        db.commit((err) => {
+                            if (err) {
+                                return db.rollback(() => {
+                                    console.error('Commit Error:', err);
+                                    res.status(500).json({ message: 'Error during commit', error: err });
+                                });
+                            }
+                            res.status(200).json({ message: 'Data successfully saved' });
+                        });
+                    })
+                    .catch(err => {
+                        db.rollback(() => {
+                            console.error('Error during processing:', err);
+                            res.status(500).json({ message: 'Database error', error: err });
+                        });
+                    });
+            })
+            .catch(({ type, error }) => {
+                db.rollback(() => {
+                    console.error(`Database Error (${type} Check):`, error);
+                    res.status(500).json({ message: 'Database error during record check', error });
+                });
+            });
+    });
 });
+
+
 app.post('/api/validateappointment', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous } = req.body;
 
@@ -555,14 +613,6 @@ app.get('/api/patients/:matricule/details', (req, res) => {
 app.get('/api/doctors/:idmedecin/liste', (req, res) => {
     const id_medecin = req.params.idmedecin;
 
-    // Requête SQL pour mettre à jour la table consultation
-    const majQuery = `
-        INSERT IGNORE INTO patients.consultation (idmedecin, idpatient, date)
-        SELECT id_medecin, id_patient, date_rendez_vous
-        FROM patients.rendez_vous
-        WHERE date_rendez_vous < NOW();
-    `;
-
     // Requête SQL pour obtenir les détails du docteur
     const medecinQuery = 'SELECT * FROM medecin WHERE idmedecin = ?';
 
@@ -574,17 +624,6 @@ app.get('/api/doctors/:idmedecin/liste', (req, res) => {
         JOIN patients.medecin AS m ON c.idmedecin = m.idmedecin
         WHERE c.idmedecin = ?;
     `;
-
-    // Mise à jour de la table consultation
-    db.query(majQuery, (err) => {
-        if (err) {
-            // Vérifier si l'erreur est liée à une duplication (ajustez le message d'erreur si nécessaire)
-            if (err.code === 'ER_DUP_ENTRY') {
-                console.warn('Duplicate entry warning during update:', err); // Log l'avertissement pour débogage
-            } else {
-                console.error('Database error during update:', err); // Log l'erreur pour débogage
-            }
-        }
 
         // Récupérer les détails du docteur
         db.query(medecinQuery, [id_medecin], (err, doctorResults) => {
@@ -613,7 +652,7 @@ app.get('/api/doctors/:idmedecin/liste', (req, res) => {
                 });
             });
         });
-    });
+    
 });
 
 // Route pour obtenir les statistiques du tableau de bord
@@ -793,7 +832,106 @@ app.get('/api/available-doctors', async (req, res) => {
         await session.close();
     }
 });
+app.get('/api/best-doctors', async (req, res) => {
+    const session = neo4jDriver.session();
 
+    try {
+        // Fetch doctor data and their number of appointments from MySQL
+        const mysqlResults = await new Promise((resolve, reject) => {
+            db.query(`
+                SELECT m.idmedecin, m.nom, m.prenom, m.specialite, m.études, m.statut_congé, COUNT(r.id_medecin) AS rdv_count
+                FROM medecin m
+                LEFT JOIN rendez_vous r ON m.idmedecin = r.id_medecin
+                GROUP BY m.idmedecin, m.specialite
+            `, (error, results) => {
+                if (error) {
+                    console.error('MySQL Error:', error);
+                    return reject('Error fetching data from MySQL');
+                }
+                resolve(results);
+            });
+        });
+
+        console.log('MySQL Results:', mysqlResults);
+
+        // Clear existing data in Neo4j
+        await session.run('MATCH (n:BDoctor) DETACH DELETE n');
+        console.log('Existing data cleared.');
+
+        // Insert data into Neo4j
+        for (const doctor of mysqlResults) {
+            try {
+                await session.run(
+                    `MERGE (d:BDoctor {id: $id})
+                     SET d.name = $name, 
+                         d.surname = $surname, 
+                         d.specialty = $specialty, 
+                         d.level = $level,
+                         d.leave_status = $leave_status,
+                         d.rdv_count = $rdv_count`,
+                    {
+                        id: doctor.idmedecin,
+                        name: doctor.nom,
+                        surname: doctor.prenom,
+                        specialty: doctor.specialite,
+                        level: doctor.études,
+                        leave_status: doctor.statut_congé,
+                        rdv_count: doctor.rdv_count
+                    }
+                );
+            } catch (err) {
+                console.error('Neo4j Insertion Error:', err);
+            }
+        }
+
+        // Query Neo4j to get the best doctor per specialty
+        const result = await session.run(
+            `MATCH (d:BDoctor)
+                WHERE d.rdv_count > 0
+                WITH d.specialty AS specialty, d
+                ORDER BY d.rdv_count DESC
+                WITH specialty, collect(d)[0] AS topDoctor
+                RETURN topDoctor`
+        );
+
+        console.log('Neo4j Query Result:', result.records);
+
+        // Format the response with the best doctors
+        const doctors = result.records.map(record => {
+            const doctor = record.get('topDoctor');
+            return {
+                id: doctor.properties.id,
+                name: doctor.properties.name,
+                surname: doctor.properties.surname,
+                specialty: doctor.properties.specialty,
+                level: doctor.properties.level,
+                rdv_count: doctor.properties.rdv_count
+            };
+        });
+
+        res.json(doctors);
+    } catch (error) {
+        console.error('Error fetching best doctors:', error);
+        res.status(500).send('Error fetching best doctors');
+    } finally {
+        await session.close();
+    }
+});
+
+app.post('/predict', async (req, res) => {
+    try {
+        // Envoyer les données à l'API Python
+        const response = await axios.post('http://localhost:5001/predict', {
+            symptoms: req.body.symptoms
+        });
+
+        // Renvoyer la réponse de l'API Python
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error making prediction:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 // Middleware pour gérer les erreurs 404
 app.use((req, res, next) => {

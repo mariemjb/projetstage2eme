@@ -11,6 +11,8 @@ import Details from './pages/patientdetails';
 import Recommandation from './pages/recommendation';
 import SelectDoctorForm from './pages/selectdoctor';
 import DispoDoctor from './pages/doctordispo';
+import PredictDoctor from './pages/RecommendationForm';
+import BestDoctor from './pages/bestdoctor';
 import './App.css'; // Importer les styles CSS
 
 
@@ -35,6 +37,8 @@ function App() {
               <Route path="/recommandation" element={<Recommandation />} />
               <Route path="/select-doctor" element={<SelectDoctorForm />} />
               <Route path="/doctor_dispo" element={<DispoDoctor />} />
+              <Route path="/predict-doctor" element={<PredictDoctor />} />
+              <Route path="/doctor-best" element={<BestDoctor />} />
             </Routes>
           </div>
         </div>
