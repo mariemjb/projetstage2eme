@@ -247,7 +247,7 @@ function Appointments() {
           <div className="details-container">
             <h3>Détails du Patient</h3>
             {console.log(selectedPatient)}
-            <p><strong>ID:</strong> {selectedPatient.idpatient}</p>
+            <p><strong>ID:</strong> {selectedPatient.matricule}</p>
             <p><strong>Nom:</strong> {selectedPatient.nom}</p>
             <p><strong>Prénom:</strong> {selectedPatient.prenom}</p>
             <p><strong>Date de Naissance:</strong> {new Date(selectedPatient.date_de_naissance).toLocaleDateString()}</p>
