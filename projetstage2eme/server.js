@@ -35,7 +35,7 @@ db.connect((err) => {
     console.log('Connected to database');
 });
 // Configurer la connexion à Neo4j
-const neo4jDriver = neo4j.driver('bolt://localhost', neo4j.auth.basic('neo4j', 'safamariem'));
+const neo4jDriver = neo4j.driver('bolt://127.0.0.1:7687', neo4j.auth.basic('neo4j', 'safamariem'));
 const neo4jSession = neo4jDriver.session();
 // Route pour gérer la soumission du formulaire
 // Route pour gérer la soumission du formulaire
