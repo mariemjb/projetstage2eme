@@ -479,7 +479,7 @@ app.post('/api/medical-conditions', (req, res) => {
         });
 });
 app.post('/api/validateappointment', (req, res) => {
-    const { id_medecin, matricule, date_rendez_vous } = req.body;
+    const { id_medecin, id_patient, date_rendez_vous } = req.body;
 
     // Convertir les dates depuis le format reçu
     const formatDate = (date) => {
@@ -487,27 +487,34 @@ app.post('/api/validateappointment', (req, res) => {
     };
 
     // Vérifier si la date et l'heure du rendez-vous sont supérieures à la date actuelle
-    const currentDateTime = formatDate(new Date());
-    const appointmentDateTime = formatDate(new Date(date_rendez_vous));
+    const currentDateTime = new Date();
+    const appointmentDateTime = new Date(date_rendez_vous);
 
-    if (appointmentDateTime <= currentDateTime) {
-        return res.status(400).json({ message: 'Le rendez-vous a une date et une heure futures.' });
+    console.log({ currentDateTime, appointmentDateTime });
+    if ( currentDateTime <= appointmentDateTime) {
+        console.log('Appointment date is in the future');
+        return res.status(400).json({ message: 'Le rendez-vous doit être à une date et une heure futures.' });
     }
+    const formattedDate = formatDate(new Date(date_rendez_vous));
 
     // Ajouter le rendez-vous à la table 'consultation'
     const insertQuery = 'INSERT INTO consultation (idmedecin, idpatient, date) VALUES (?, ?, ?)';
-    db.query(insertQuery, [id_medecin, matricule, date_rendez_vous], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Erreur lors de l\'ajout à la table consultation.' });
+    db.query(insertQuery, [id_medecin, id_patient, formattedDate], (err, result) => {
+        if (err) {
+            console.log('Error during insertion:', err);
+            return res.status(500).json({ message: 'Erreur lors de l\'ajout à la table consultation.' });
+        }
 
         // Supprimer le rendez-vous de la table 'rendez_vous'
         const deleteQuery = 'DELETE FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?';
-        db.query(deleteQuery, [id_medecin, matricule, date_rendez_vous], (err, result) => {
+        db.query(deleteQuery, [id_medecin, id_patient, formattedDate], (err, result) => {
             if (err) return res.status(500).json({ message: 'Erreur lors de la suppression de la table rendez_vous.' });
 
             res.status(200).json({ message: 'Rendez-vous validé et déplacé vers la table consultation.' });
         });
     });
 });
+
 
 
 // Route pour obtenir les détails d'un patient avec les données des tables antecedant_medical et habitude
