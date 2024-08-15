@@ -1,0 +1,77 @@
+/* Container for aligning cards in a row */
+.recommendation-container {
+    background: #f5f7fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Align content towards the top */
+    padding-top: 20px; /* Add padding to adjust vertical spacing */
+    min-height: 100vh;
+    width: 100%; /* Change to 100% to fit the screen width */
+    max-width: 1400px; /* Optional: Set a max width if needed */
+    margin: 40px auto 20px 100px;  /* Center the container horizontally */
+}
+
+/* Title styles */
+.recommendation-title {
+    text-align: center;
+    margin-top: 20px; /* Reduced margin to bring the title closer to the top */
+    margin-bottom: 20px; /* Reduced margin to bring the title closer to the content */
+    font-size: 32px;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+/* Card container styles */
+.recommendation-card-container {
+    display: flex;
+    flex-direction: column; /* Set the direction to column for vertical alignment */
+    gap: 50px; /* Space between each card */
+    width: 100%;
+    max-width: 1200px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Individual card styles */
+.recommendation-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0; /* Adjust margin to create space between cards */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    max-width: 450px;
+    height: 100px;
+    border-left: 8px solid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Specific card styles */
+.recommendation-card:nth-child(1) { border-left-color: #3498db; }
+.recommendation-card:nth-child(2) { border-left-color: #e74c3c; }
+.recommendation-card:nth-child(3) { border-left-color: #2ecc71; }
+
+/* Hover effect for cards */
+.recommendation-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Text styles within cards */
+.recommendation-card h3 {
+    margin: 25px 0 15px;
+    font-size: 22px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.recommendation-card p {
+    font-size: 32px;
+    margin: 0;
+    color: #34495e;
+    font-weight: 700;
+}

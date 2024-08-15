@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
 const cors = require('cors');
-
+const neo4j = require('neo4j-driver');
 const app = express();
 const port = 5000;
 // Servir les fichiers statiques depuis le dossier 'uploads'
@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'gestion_scolaire123',
+    password: 'root',
     database: 'patients'
 });
 
@@ -33,7 +33,9 @@ db.connect((err) => {
     if (err) throw err;
     console.log('Connected to database');
 });
-
+// Configurer la connexion à Neo4j
+const neo4jDriver = neo4j.driver('bolt://localhost', neo4j.auth.basic('neo4j', 'safamariem'));
+const neo4jSession = neo4jDriver.session();
 // Route pour gérer la soumission du formulaire
 // Route pour gérer la soumission du formulaire
 app.post('/api/patients', upload.single('pdf'), (req, res) => {
@@ -608,6 +610,165 @@ app.get('/api/dashboard/stats', (req, res) => {
         }
     });
 });
+// Fetch recommendations from MySQL and insert into Neo4j
+app.get('/api/recommendations', async (req, res) => {
+    const session = neo4jDriver.session();
+
+    try {
+        const mysqlResults = await new Promise((resolve, reject) => {
+            db.query('SELECT idmedecin, nom, prenom, specialite, études, statut_congé FROM medecin', (error, results) => {
+                if (error) {
+                    console.error('MySQL Error:', error);
+                    return reject('Error fetching data from MySQL');
+                }
+                resolve(results);
+            });
+        });
+
+        console.log('MySQL Results:', mysqlResults);
+        // Clear existing data in Neo4j
+        await session.run('MATCH (n:Doctor) DETACH DELETE n');
+        console.log('Existing data cleared.');
+        for (const doctor of mysqlResults) {
+            try {
+                await session.run(
+                    `MERGE (d:Doctor {id: $id, name: $name, surname: $surname, specialty: $specialty, level: $level})
+                     SET d.leave_status = $leave_status`,
+                    {
+                        id: doctor.idmedecin,
+                        name: doctor.nom,
+                        surname: doctor.prenom,
+                        specialty: doctor.specialite,
+                        level: doctor.études,
+                        leave_status: doctor.statut_congé
+                    }
+                );
+            } catch (err) {
+                console.error('Neo4j Insertion Error:', err);
+            }
+        }
+
+        const cypherQuery = `
+            MATCH (selected:Doctor {id: $id})
+            MATCH (other:Doctor)
+            WHERE (other.specialty = selected.specialty
+                OR other.level = selected.level)
+            AND other.leave_status = 0
+            AND other.id <> selected.id
+            RETURN other AS recommended_doctor
+
+        `;
+
+        const selectedDoctorId = req.query.selectedDoctorId;
+        if (!selectedDoctorId) {
+            await session.close();
+            return res.status(400).send('Selected doctor ID is required');
+        }
+
+        console.log('Selected Doctor ID:', selectedDoctorId);
+        console.log('Cypher Query:', cypherQuery);
+        const selectedDoctor = parseFloat(req.query.selectedDoctorId);
+        const result = await session.run(cypherQuery, { id: selectedDoctor });
+
+        console.log('Neo4j Query Result:', result.records);
+
+        const recommendations = result.records.map(record => {
+            const doctor = record.get('recommended_doctor');
+            return {
+                id: doctor.properties.id,
+                name: doctor.properties.name,
+                surname: doctor.properties.surname
+            };
+        });
+
+        res.json(recommendations);
+    } catch (error) {
+        console.error('Server Error:', error);
+        res.status(500).send('Error processing request');
+    } finally {
+        await session.close();
+    }
+});
+
+
+
+// Endpoint to get available doctors
+app.get('/api/available-doctors', async (req, res) => {
+    const session = neo4jDriver.session();
+
+    try {
+        // Fetch doctor data from MySQL
+        const mysqlResults = await new Promise((resolve, reject) => {
+            db.query('SELECT idmedecin, nom, prenom, specialite, études, statut_congé FROM medecin', (error, results) => {
+                if (error) {
+                    console.error('MySQL Error:', error);
+                    return reject('Error fetching data from MySQL');
+                }
+                resolve(results);
+            });
+        });
+
+        console.log('MySQL Results:', mysqlResults);
+
+        // Clear existing data in Neo4j
+        await session.run('MATCH (n:Doctor) DETACH DELETE n');
+        console.log('Existing data cleared.');
+
+        // Insert data into Neo4j
+        for (const doctor of mysqlResults) {
+            try {
+                await session.run(
+                    `MERGE (d:Doctor {id: $id})
+                     SET d.name = $name, 
+                         d.surname = $surname, 
+                         d.specialty = $specialty, 
+                         d.level = $level,
+                         d.leave_status = $leave_status`,
+                    {
+                        id: doctor.idmedecin,
+                        name: doctor.nom,
+                        surname: doctor.prenom,
+                        specialty: doctor.specialite,
+                        level: doctor.études,
+                        leave_status: doctor.statut_congé
+                    }
+                );
+            } catch (err) {
+                console.error('Neo4j Insertion Error:', err);
+            }
+        }
+
+        // Query Neo4j to get available doctors
+        const result = await session.run(
+            `MATCH (d:Doctor)
+             WHERE d.leave_status = 0
+             RETURN d`
+        );
+
+        console.log('Neo4j Query Result:', result.records);
+
+        // Format the response with available doctors
+        const doctors = result.records.map(record => {
+            const doctor = record.get('d');
+            return {
+                id: doctor.properties.id,
+                name: doctor.properties.name,
+                surname: doctor.properties.surname,
+                specialty: doctor.properties.specialty,
+                level: doctor.properties.level
+            };
+        });
+
+        res.json(doctors);
+    } catch (error) {
+        console.error('Error fetching available doctors:', error);
+        res.status(500).send('Error fetching available doctors');
+    } finally {
+        await session.close();
+    }
+});
+
+
 // Middleware pour gérer les erreurs 404
 app.use((req, res, next) => {
     res.status(404).json({ error: 'Not Found' });

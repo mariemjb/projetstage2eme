@@ -1,0 +1,96 @@
+/* Styles pour le cercle d'attente */
+.loading-spinner {
+    margin: 20px auto;
+    border: 8px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 8px solid #3498db;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;/* doctorDispo.css */
+
+    .doctor-dispo-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    
+    /* Loading spinner */
+    .loading-spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    li {
+      padding: 10px;
+      margin: 10px 0;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+      color: #333;
+    }
+    
+    li:nth-child(even) {
+      background-color: #f1f1f1;
+    }
+    
+    p {
+      color: #777;
+      font-size: 16px;
+    }
+    
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Additional styles for the doctor list */
+  .doctor-dispo-container {
+    /*text-align: center;*/
+    padding: 20px;
+    width: 900px;
+    margin: 0px auto 200px 300px;
+  }
+  
+  .doctor-dispo-container ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .doctor-dispo-container li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+  }
+  

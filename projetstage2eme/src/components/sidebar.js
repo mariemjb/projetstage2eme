@@ -8,6 +8,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday'; // Icône pou
 import ListIcon from '@mui/icons-material/List';
 import EventNoteIcon from '@mui/icons-material/EventNote'; // Icône pour l'affichage des rendez-vous
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import './Sidebar.css'; // Assurez-vous d'importer le fichier CSS
 
 function Sidebar() {
@@ -41,6 +42,10 @@ function Sidebar() {
         <ListItem button component={Link} to="/doctors">
           <ListItemIcon><LocalHospitalIcon /></ListItemIcon>
           <ListItemText primary="Liste Des Medecins" />
+        </ListItem>
+        <ListItem button component={Link} to="/recommandation">
+          <ListItemIcon><ThumbUpIcon /></ListItemIcon>
+          <ListItemText primary="Recommandations" />
         </ListItem>
       </List>
     </div>

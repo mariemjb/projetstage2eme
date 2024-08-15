@@ -32,18 +32,7 @@ function DoctorsList() {
       });
   }, []);
 
-  useEffect(() => {
-    if (selectedDoctor && selectedDoctor.idmedecin) {
-      axios.get(`http://localhost:5000/api/patients/${selectedDoctor.matricule}/details`)
-        .then(response => {
-          setSelectedDoctor(response.data.doctor);
-          setPatientDoctor(response.data.patients);
-          console.log('Doctor:', response.data.doctor);
-          console.log('Patients:', response.data.antecedents);
-        })
-        .catch(error => console.error('Error fetching doctor details:', error));
-    }
-  }, [selectedDoctor]);
+
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
