@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'gestion_scolaire123',
+    password: 'root',
     database: 'patients'
 });
 
@@ -555,14 +555,6 @@ app.get('/api/patients/:matricule/details', (req, res) => {
 app.get('/api/doctors/:idmedecin/liste', (req, res) => {
     const id_medecin = req.params.idmedecin;
 
-    // Requête SQL pour mettre à jour la table consultation
-    const majQuery = `
-        INSERT IGNORE INTO patients.consultation (idmedecin, idpatient, date)
-        SELECT id_medecin, id_patient, date_rendez_vous
-        FROM patients.rendez_vous
-        WHERE date_rendez_vous < NOW();
-    `;
-
     // Requête SQL pour obtenir les détails du docteur
     const medecinQuery = 'SELECT * FROM medecin WHERE idmedecin = ?';
 
@@ -574,17 +566,6 @@ app.get('/api/doctors/:idmedecin/liste', (req, res) => {
         JOIN patients.medecin AS m ON c.idmedecin = m.idmedecin
         WHERE c.idmedecin = ?;
     `;
-
-    // Mise à jour de la table consultation
-    db.query(majQuery, (err) => {
-        if (err) {
-            // Vérifier si l'erreur est liée à une duplication (ajustez le message d'erreur si nécessaire)
-            if (err.code === 'ER_DUP_ENTRY') {
-                console.warn('Duplicate entry warning during update:', err); // Log l'avertissement pour débogage
-            } else {
-                console.error('Database error during update:', err); // Log l'erreur pour débogage
-            }
-        }
 
         // Récupérer les détails du docteur
         db.query(medecinQuery, [id_medecin], (err, doctorResults) => {
@@ -613,7 +594,7 @@ app.get('/api/doctors/:idmedecin/liste', (req, res) => {
                 });
             });
         });
-    });
+    
 });
 
 // Route pour obtenir les statistiques du tableau de bord

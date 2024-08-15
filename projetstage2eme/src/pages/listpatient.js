@@ -177,15 +177,26 @@ const handleDelete = (matricule) => {
 };
 const handleViewDetails = async (patient) => {
   try {
+    // Clear previous selected patient data to avoid showing stale data
+    setSelectedPatient(null);
+    setPatientAntecedents([]);
+    setPatientHabits([]);
+    
+    // Fetch new patient details
     const response = await axios.get(`http://localhost:5000/api/patients/${patient.matricule}/details`);
+    
+    // Set the new patient data after fetching
     setSelectedPatient(response.data.patient);
     setPatientAntecedents(response.data.antecedents);
     setPatientHabits(response.data.habits);
-    setOpenDetailsDialog(true);; // Ouvrir le dialogue pour afficher les détails du patient
+    
+    // Open the dialog to display patient details
+    setOpenDetailsDialog(true);
   } catch (error) {
     console.error('There was an error fetching the patient details!', error);
   }
 };
+
 
 
   const transformStatus = (value, type) => {
