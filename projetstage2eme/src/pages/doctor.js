@@ -85,6 +85,7 @@ const transformStatus = (value) => {
                     {doctor.idmedecin}
                   
                 </TableCell>
+                
                 <TableCell>{doctor.nom}</TableCell>
                 <TableCell>{doctor.prenom}</TableCell>
                 <TableCell>{doctor.specialite}</TableCell>

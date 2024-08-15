@@ -8,7 +8,7 @@ const PatientListDialog = ({ open, handleClose, doctor, patients = [] }) => {
     <Dialog open={open} onClose={handleClose} classes={{ paper: 'custom-dialog' }}>
       <DialogTitle>Liste Des patients</DialogTitle>
       <DialogContent>
-        <p><strong>Id Médecin:</strong> {doctor?.matricule}</p>
+      <p><strong>Id Médecin:</strong> {doctor?.idmedecin}</p>
         <p><strong>Nom:</strong> {doctor?.nom}</p>
         <p><strong>Prénom:</strong> {doctor?.prenom}</p>
 

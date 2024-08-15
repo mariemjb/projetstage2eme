@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
@@ -25,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'root',
+    password: 'gestion_scolaire123',
     database: 'patients'
 });
 
@@ -320,27 +321,20 @@ app.put('/api/appointments', (req, res) => {
     const { id_medecin, id_patient, date_rendez_vous, oldDate } = req.body;
 
     console.log('Received data:', { id_medecin, id_patient, date_rendez_vous, oldDate });
-
+    console.log("old data",oldDate)
     const date = new Date(date_rendez_vous);
     const old_Date = new Date(oldDate);
-
     if (!id_medecin || !id_patient || !date_rendez_vous) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const formatDate = (date) => {
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-    };
-
-    const formattedDate = formatDate(date);
-    const formattedOldDate = formatDate(old_Date);
-
-    console.log('Formatted dates:', { formattedDate, formattedOldDate });
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    const formattedOldDate = `${old_Date.getFullYear()}-${String(old_Date.getMonth() + 1).padStart(2, '0')}-${String(old_Date.getDate()).padStart(2, '0')} ${String(old_Date.getHours()).padStart(2, '0')}:${String(old_Date.getMinutes()).padStart(2, '0')}:${String(old_Date.getSeconds()).padStart(2, '0')}`;
 
     // Vérifiez s'il existe une entrée avec cette date pour cet id_medecin et id_patient
     const checkSql = `SELECT * FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?`;
     const checkValues = [id_medecin, id_patient, formattedDate];
-
+  
     db.query(checkSql, checkValues, (err, results) => {
         if (err) {
             console.error('Database error:', err);
@@ -355,25 +349,20 @@ app.put('/api/appointments', (req, res) => {
         // Si aucun conflit, procédez à la mise à jour
         const updateSql = `UPDATE rendez_vous SET date_rendez_vous = ? WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?`;
         const updateValues = [formattedDate, id_medecin, id_patient, formattedOldDate];
-
+    
         console.log('Executing SQL:', { sql: updateSql, values: updateValues });
-
+    
         db.query(updateSql, updateValues, (err, results) => {
             if (err) {
                 console.error('Database error:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
-
-            console.log('Update results:', results);
-
-            if (results.affectedRows === 0) {
-                return res.status(404).json({ error: 'Appointment not found' });
-            }
-
             res.status(200).json({ message: 'Appointment updated successfully' });
         });
     });
 });
+
+  
 // Route pour obtenir les détails d'un médecin par son ID
 app.get('/api/doctor/:id', (req, res) => {
     const { id } = req.params;
@@ -488,6 +477,36 @@ app.post('/api/medical-conditions', (req, res) => {
             console.error('Error during processing:', err);
             res.status(500).json({ message: 'Database error', error: err });
         });
+});
+app.post('/api/validateappointment', (req, res) => {
+    const { id_medecin, matricule, date_rendez_vous } = req.body;
+
+    // Convertir les dates depuis le format reçu
+    const formatDate = (date) => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    };
+
+    // Vérifier si la date et l'heure du rendez-vous sont supérieures à la date actuelle
+    const currentDateTime = formatDate(new Date());
+    const appointmentDateTime = formatDate(new Date(date_rendez_vous));
+
+    if (appointmentDateTime <= currentDateTime) {
+        return res.status(400).json({ message: 'Le rendez-vous a une date et une heure futures.' });
+    }
+
+    // Ajouter le rendez-vous à la table 'consultation'
+    const insertQuery = 'INSERT INTO consultation (idmedecin, idpatient, date) VALUES (?, ?, ?)';
+    db.query(insertQuery, [id_medecin, matricule, date_rendez_vous], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Erreur lors de l\'ajout à la table consultation.' });
+
+        // Supprimer le rendez-vous de la table 'rendez_vous'
+        const deleteQuery = 'DELETE FROM rendez_vous WHERE id_medecin = ? AND id_patient = ? AND date_rendez_vous = ?';
+        db.query(deleteQuery, [id_medecin, matricule, date_rendez_vous], (err, result) => {
+            if (err) return res.status(500).json({ message: 'Erreur lors de la suppression de la table rendez_vous.' });
+
+            res.status(200).json({ message: 'Rendez-vous validé et déplacé vers la table consultation.' });
+        });
+    });
 });
 
 

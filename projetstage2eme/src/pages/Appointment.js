@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faEdit, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import './Appointments.css';
 
@@ -15,8 +15,10 @@ function Appointments() {
   const [visiblePatient, setVisiblePatient] = useState(null);
   const [selectedAppointmentDate, setSelectedAppointmentDate] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [showValidatePopup, setShowValidatePopup] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [deleteMessage, setDeleteMessage] = useState('');
+  const [validateMessage, setValidateMessage] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editAppointment, setEditAppointment] = useState({
     id_medecin: '',
@@ -24,7 +26,7 @@ function Appointments() {
     date_rendez_vous: '',
     oldDate: ''
   });
-  const [saveMessage, setSaveMessage] = useState(''); // Ajouter cet état
+  const [saveMessage, setSaveMessage] = useState('');
 
   const doctorDetailsRef = useRef(null);
   const patientDetailsRef = useRef(null);
@@ -72,14 +74,16 @@ function Appointments() {
         .catch(error => console.error('Error fetching patient details:', error));
     }
   };
+
   const refreshList = async () => {
     try {
-        const response = await axios.get('http://localhost:5000/api/getappointments');
-        setAppointments(response.data);
+      const response = await axios.get('http://localhost:5000/api/getappointments');
+      setAppointments(response.data);
     } catch (error) {
-        console.error('There was an error fetching the appointments!', error);
+      console.error('There was an error fetching the appointments!', error);
     }
   };
+
   const handleDeleteClick = (appointment) => {
     setSelectedAppointment(appointment);
     setDeleteMessage('');
@@ -93,7 +97,7 @@ function Appointments() {
         data: { id_medecin, id_patient, date_rendez_vous }
       })
         .then(() => {
-          setAppointments(appointments.filter(appt => 
+          setAppointments(appointments.filter(appt =>
             !(appt.id_medecin === id_medecin && appt.id_patient === id_patient && appt.date_rendez_vous === date_rendez_vous)
           ));
           setDeleteMessage('Suppression réussie !');
@@ -110,8 +114,7 @@ function Appointments() {
   };
 
   const openEditModal = (appointment) => {
-    console.log("the appoitment",appointment)
-    const oldDate = new Date(appointment.date_rendez_vous).toLocaleString()
+    const oldDate = new Date(appointment.date_rendez_vous).toLocaleString();
     setEditAppointment({
       id_medecin: appointment.id_medecin,
       id_patient: appointment.id_patient,
@@ -123,12 +126,17 @@ function Appointments() {
 
   const handleSaveChanges = async () => {
     try {
-      console.log("editAppointment",editAppointment)
       await axios.put('http://localhost:5000/api/appointments', editAppointment);
-      setAppointments(appointments.map(appt => 
+      setAppointments(appointments.map(appt =>
         appt.date_rendez_vous === editAppointment.date_rendez_vous ? editAppointment : appt
       ));
-      setSaveMessage('Modifications enregistrées avec succès !'); // Message de succès
+      setSaveMessage('Modifications enregistrées avec succès !');
+      
+      // Validation du rendez-vous après la sauvegarde
+      if (editAppointment.date_rendez_vous) {
+        confirmValidate();
+      }
+
       setTimeout(() => {
         setSaveMessage('');
         setIsEditModalOpen(false);
@@ -136,7 +144,36 @@ function Appointments() {
       refreshList();
     } catch (error) {
       console.error('Error updating appointment:', error);
-      setSaveMessage('Erreur lors de la sauvegarde.'); // Message d'erreur
+      setSaveMessage('Erreur lors de la sauvegarde.');
+    }
+  };
+
+  const handleValidateClick = (appointment) => {
+    setSelectedAppointment(appointment);
+    setValidateMessage('');
+    setShowValidatePopup(true);
+  };
+
+  const confirmValidate = () => {
+    if (selectedAppointment) {
+      const { id_medecin, id_patient, date_rendez_vous } = selectedAppointment;
+      axios.post('http://localhost:5000/api/validateappointment', {
+        id_medecin, id_patient, date_rendez_vous
+      })
+        .then(() => {
+          setAppointments(appointments.filter(appt =>
+            !(appt.id_medecin === id_medecin && appt.id_patient === id_patient && appt.date_rendez_vous === date_rendez_vous)
+          ));
+          setValidateMessage('Rendez-vous validé avec succès !');
+          setTimeout(() => {
+            setValidateMessage('');
+            setShowValidatePopup(false);
+          }, 3000);
+        })
+        .catch(error => {
+          console.error('Error validating appointment:', error.response ? error.response.data : error.message);
+          setValidateMessage('Erreur lors de la validation.');
+        });
     }
   };
 
@@ -179,6 +216,9 @@ function Appointments() {
                   <button className="icon-button icon-delete" onClick={() => handleDeleteClick(appt)}>
                     <FontAwesomeIcon icon={faTrashAlt} />
                   </button>
+                  <button className="icon-button icon-validate" onClick={() => handleValidateClick(appt)}>
+                    <FontAwesomeIcon icon={faCheckCircle} />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -187,36 +227,34 @@ function Appointments() {
       </div>
 
       <div ref={doctorDetailsRef}>
-    {selectedDoctor && visibleDoctor === selectedDoctor.idmedecin && (
-        <div className="details-container">
+        {selectedDoctor && visibleDoctor === selectedDoctor.idmedecin && (
+          <div className="details-container">
             <h3>Détails du Médecin</h3>
             <p><strong>ID:</strong> {selectedDoctor.idmedecin}</p>
             <p><strong>Nom:</strong> {selectedDoctor.nom}</p>
             <p><strong>Prénom:</strong> {selectedDoctor.prenom}</p>
             <p><strong>ID Département:</strong> {selectedDoctor.id_dept}</p>
             <p><strong>Spécialité:</strong> {selectedDoctor.specialite}</p>
-            <p><strong>Études:</strong> {selectedDoctor.études}</p>
-            <p><strong>Statut Congé:</strong> {selectedDoctor.statut_congé ? 'En congé' : 'Disponible'}</p>
-        </div>
-    )}
-</div>
-
-
+          </div>
+        )}
+      </div>
 
       <div ref={patientDetailsRef}>
-        {selectedPatient && visiblePatient === selectedPatient.matricule && (
+        {selectedPatient && visiblePatient === selectedPatient.idpatient && (
           <div className="details-container">
             <h3>Détails du Patient</h3>
-            <p><strong>Matricule:</strong> {selectedPatient.matricule}</p>
+            <p><strong>ID:</strong> {selectedPatient.idpatient}</p>
             <p><strong>Nom:</strong> {selectedPatient.nom}</p>
             <p><strong>Prénom:</strong> {selectedPatient.prenom}</p>
+            <p><strong>Date de Naissance:</strong> {new Date(selectedPatient.date_naissance).toLocaleDateString()}</p>
+            <p><strong>Numéro de Téléphone:</strong> {selectedPatient.telephone}</p>
           </div>
         )}
       </div>
 
       {showDeletePopup && selectedAppointment && (
         <div className="popup visible">
-          <div className="popup-header">Confirmer la suppression</div>
+          <div className="popup-header">Confirmer la Suppression</div>
           <div className="popup-body">
             <p><strong>ID Médecin:</strong> {selectedAppointment.id_medecin}</p>
             <p><strong>ID Patient:</strong> {selectedAppointment.id_patient}</p>
@@ -231,6 +269,23 @@ function Appointments() {
         </div>
       )}
 
+      {showValidatePopup && selectedAppointment && (
+        <div className="popup visible">
+          <div className="popup-header">Confirmer la Validation</div>
+          <div className="popup-body">
+            <p><strong>ID Médecin:</strong> {selectedAppointment.id_medecin}</p>
+            <p><strong>ID Patient:</strong> {selectedAppointment.id_patient}</p>
+            <p><strong>Date et Heure:</strong> {new Date(selectedAppointment.date_rendez_vous).toLocaleString()}</p>
+            <p>Êtes-vous sûr de vouloir valider ce rendez-vous ?</p>
+            {validateMessage && <p className="validate-message">{validateMessage}</p>}
+          </div>
+          <div className="popup-footer">
+            <button className="popup-button popup-button-confirm" onClick={confirmValidate}>Confirmer</button>
+            <button className="popup-button popup-button-cancel" onClick={() => setShowValidatePopup(false)}>Annuler</button>
+          </div>
+        </div>
+      )}
+
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
@@ -239,11 +294,9 @@ function Appointments() {
         overlayClassName="ReactModal__Overlay"
       >
         <h2 className="edit-modal-title">Modifier le Rendez-vous</h2>
-
         {saveMessage && (
           <div className="save-message">{saveMessage}</div>
         )}
-
         <div className="edit-modal-body">
           <div className="form-group">
             <label>ID Médecin:</label>
