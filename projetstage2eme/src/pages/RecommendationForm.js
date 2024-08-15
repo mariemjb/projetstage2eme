@@ -49,7 +49,7 @@ function RecommendationForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/predict', { symptoms });
+            const response = await axios.post('http://localhost:5002/predict', { symptoms });
             setPrediction(response.data.prediction);
         } catch (error) {
             console.error('Error making prediction', error);

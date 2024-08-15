@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 import pickle
 import pandas as pd
+from flask_cors import CORS  # Importer CORS
 
 app = Flask(__name__)
+CORS(app)  # Ajouter cette ligne pour permettre les requêtes CORS
 
 # Charger le modèle depuis un fichier
 with open('model/Specalist.pkl', 'rb') as model_file:
@@ -42,4 +44,4 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(port=5002)
