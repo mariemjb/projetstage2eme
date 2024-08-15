@@ -143,7 +143,7 @@ const MedicalConditionsForm = () => {
         } catch (error) {
           console.error(error);
       
-          toast.error('Erreur lors de l\'envoi des données.', {
+          toast.error('Ce patient a déja ces détailes.', {
             position: "top-right",
             autoClose: 3000,
             hideProgressBar: false,
