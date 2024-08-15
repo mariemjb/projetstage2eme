@@ -51,7 +51,7 @@ function PatientsList() {
         })
         .catch(error => console.error('Error fetching patient details:', error));
     }
-  }, [selectedPatient]);
+  }, []);
   useEffect(() => {
     if (selectedPatientEdit && selectedPatientEdit.matricule) {
       axios.get(`http://localhost:5000/api/patients/${selectedPatientEdit.matricule}`)
@@ -61,7 +61,7 @@ function PatientsList() {
         })
         .catch(error => console.error('Error fetching patient details:', error));
     }
-  }, [selectedPatientEdit]);
+  }, []);
   const handleEdit = (patient) => {
     setSelectedPatientEdit(patient);
     setOpenDialog(true);
