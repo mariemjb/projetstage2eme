@@ -181,15 +181,15 @@ const handleViewDetails = async (patient) => {
     setSelectedPatient(null);
     setPatientAntecedents([]);
     setPatientHabits([]);
-    
+
     // Fetch new patient details
     const response = await axios.get(`http://localhost:5000/api/patients/${patient.matricule}/details`);
-    
+
     // Set the new patient data after fetching
     setSelectedPatient(response.data.patient);
     setPatientAntecedents(response.data.antecedents);
     setPatientHabits(response.data.habits);
-    
+
     // Open the dialog to display patient details
     setOpenDetailsDialog(true);
   } catch (error) {
@@ -214,110 +214,112 @@ const handleViewDetails = async (patient) => {
     return date.toLocaleDateString('fr-FR');
   };
 
-  return (
-    <div>
-      <TableContainer component={Paper} className="table-container">
-      <div className="list-header">
-        <h2 className="list-title">Liste Des Patient</h2>
-      </div>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Matricule</TableCell>
-              <TableCell>Nom</TableCell>
-              <TableCell>Prénom</TableCell>
-              <TableCell>Sexe</TableCell>
-              <TableCell>Date de Naissance</TableCell>
-              <TableCell>Âge</TableCell>
-              <TableCell>Adresse</TableCell>
-              <TableCell>Nationalité</TableCell>
-              <TableCell>Gouvernorat</TableCell>
-              <TableCell>Téléphone Domicile</TableCell>
-              <TableCell>Téléphone Portable</TableCell>
-              <TableCell>Profession</TableCell>
-              <TableCell>Taille</TableCell>
-              <TableCell>Poids</TableCell>
-              <TableCell>Globules Rouges</TableCell>
-              <TableCell>Marié</TableCell>
-              <TableCell>Vie Seul</TableCell>
-              <TableCell>Dossier Medical</TableCell>
-              <TableCell>Edit</TableCell>
-              <TableCell>Delete</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {patients.map(patient => (
-              <TableRow key={patient.matricule}>
-                 <TableCell>
-                  <p
-                    style={{cursor: "pointer", color: "blue"}}
-                    onClick={() => handleViewDetails(patient)}
-                  >
-                    {patient.matricule}
-                  </p>
-                </TableCell>
-                <TableCell>{patient.nom}</TableCell>
-                <TableCell>{patient.prenom}</TableCell>
-                <TableCell>{patient.sexe}</TableCell>
-                <TableCell>{formatDate(patient.date_de_naissance)}</TableCell>
-                <TableCell>{patient.age}</TableCell>
-                <TableCell>{patient.adresse}</TableCell>
-                <TableCell>{patient.nationalite}</TableCell>
-                <TableCell>{patient.gouvernorat}</TableCell>
-                <TableCell>{patient.tel_domicile}</TableCell>
-                <TableCell>{patient.tel_portable}</TableCell>
-                <TableCell>{patient.profession}</TableCell>
-                <TableCell>{patient.taille}</TableCell>
-                <TableCell>{patient.poids}</TableCell>
-                <TableCell>{patient.globule_rouge}</TableCell>
-                <TableCell>{transformStatus(patient.marie, 'marie')}</TableCell>
-                <TableCell>{transformStatus(patient.vie_seul, 'vie_seul')}</TableCell>
-                <TableCell>
-                  {patient.dossier_medical ? (
-                    <a href={`http://localhost:5000/uploads/${patient.dossier_medical}`} target="_blank" rel="noopener noreferrer">
-                      <Button startIcon={<OpenInNewIcon />}>Ouvrir</Button>
-                    </a>
-                  ) : 'Pas de dossier'}
-                </TableCell>
-                <TableCell>
-                  <Button 
-                    color="primary" 
-                    onClick={() => handleEdit(patient)} 
-                    startIcon={<EditIcon />}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button 
-                    color="secondary" 
-                    onClick={() => handleDelete(patient.matricule)} 
-                    startIcon={<DeleteIcon />}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <ToastContainer />
+    return (
+        <div>
+            <div className="table-wrapper">
+                <TableContainer component={Paper} className="table-container">
+                    <div className="list-header">
+                        <h2 className="list-title">Liste Des Patient</h2>
+                    </div>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Matricule</TableCell>
+                                <TableCell>Nom</TableCell>
+                                <TableCell>Prénom</TableCell>
+                                <TableCell>Sexe</TableCell>
+                                <TableCell>Date de Naissance</TableCell>
+                                <TableCell>Âge</TableCell>
+                                <TableCell>Adresse</TableCell>
+                                <TableCell>Nationalité</TableCell>
+                                <TableCell>Gouvernorat</TableCell>
+                                <TableCell>Téléphone Domicile</TableCell>
+                                <TableCell>Téléphone Portable</TableCell>
+                                <TableCell>Profession</TableCell>
+                                <TableCell>Taille</TableCell>
+                                <TableCell>Poids</TableCell>
+                                <TableCell>Globules Rouges</TableCell>
+                                <TableCell>Marié</TableCell>
+                                <TableCell>Vie Seul</TableCell>
+                                <TableCell>Dossier Medical</TableCell>
+                                <TableCell>Edit</TableCell>
+                                <TableCell>Delete</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {patients.map(patient => (
+                                <TableRow key={patient.matricule}>
+                                    <TableCell>
+                                        <p
+                                            style={{ cursor: "pointer", color: "blue" }}
+                                            onClick={() => handleViewDetails(patient)}
+                                        >
+                                            {patient.matricule}
+                                        </p>
+                                    </TableCell>
+                                    <TableCell>{patient.nom}</TableCell>
+                                    <TableCell>{patient.prenom}</TableCell>
+                                    <TableCell>{patient.sexe}</TableCell>
+                                    <TableCell>{formatDate(patient.date_de_naissance)}</TableCell>
+                                    <TableCell>{patient.age}</TableCell>
+                                    <TableCell>{patient.adresse}</TableCell>
+                                    <TableCell>{patient.nationalite}</TableCell>
+                                    <TableCell>{patient.gouvernorat}</TableCell>
+                                    <TableCell>{patient.tel_domicile}</TableCell>
+                                    <TableCell>{patient.tel_portable}</TableCell>
+                                    <TableCell>{patient.profession}</TableCell>
+                                    <TableCell>{patient.taille}</TableCell>
+                                    <TableCell>{patient.poids}</TableCell>
+                                    <TableCell>{patient.globule_rouge}</TableCell>
+                                    <TableCell>{transformStatus(patient.marie, 'marie')}</TableCell>
+                                    <TableCell>{transformStatus(patient.vie_seul, 'vie_seul')}</TableCell>
+                                    <TableCell>
+                                        {patient.dossier_medical ? (
+                                            <a href={`http://localhost:5000/uploads/${patient.dossier_medical}`} target="_blank" rel="noopener noreferrer">
+                                                <Button startIcon={<OpenInNewIcon />}>Ouvrir</Button>
+                                            </a>
+                                        ) : 'Pas de dossier'}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            color="primary"
+                                            onClick={() => handleEdit(patient)}
+                                            startIcon={<EditIcon />}
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            color="secondary"
+                                            onClick={() => handleDelete(patient.matricule)}
+                                            startIcon={<DeleteIcon />}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </div>
+            <ToastContainer />
 
-      {/* Dialog de modification */}
-      <PatientEditDialog 
-        open={openDialog} 
-        handleClose={handleCloseDialog}
-        patient={selectedPatientEdit}
-        handleChange={handleChange}
-        handleSubmit={handleSubmit}
-        handleFileChange={handleFileChange}
-      />
-      <PatientDetailsDialog
-        open={openDetailsDialog}
-        handleClose={handleCloseDialogdetails }
-        patient={selectedPatient}
-        antecedents={patientAntecedents}
-        habits={patientHabits}
-      />
-    </div>
-  );
+            {/* Dialog de modification */}
+            <PatientEditDialog
+                open={openDialog}
+                handleClose={handleCloseDialog}
+                patient={selectedPatientEdit}
+                handleChange={handleChange}
+                handleSubmit={handleSubmit}
+                handleFileChange={handleFileChange}
+            />
+            <PatientDetailsDialog
+                open={openDetailsDialog}
+                handleClose={handleCloseDialogdetails}
+                patient={selectedPatient}
+                antecedents={patientAntecedents}
+                habits={patientHabits}
+            />
+        </div>
+    );
 }
 
 export default PatientsList;
